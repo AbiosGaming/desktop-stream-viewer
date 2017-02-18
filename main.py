@@ -16,7 +16,7 @@ import ctypes
 import vlc
 import streamlink
 import callbacks as cb
-from streamContainer import StreamContainer
+from stream_container import StreamContainer
 
 class Application(Gtk.Application):
 
