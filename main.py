@@ -108,7 +108,25 @@ class ApplicationWindow(object):
         self.application.vlc_instance.release()
         self.window.destroy()
 
+    
     def get_vlc_mapped_to_widget(self, media, object):
+        """Creates a vlc media player and attaches it to the passed objects window
+        
+        For windows the object window must be interpreted by win32 as a HWND handle
+        therefore a pointer to the drawingarea is retrieved and then the OS gives the 
+        handle for its window.
+        
+        Parameters
+        ----------
+        media : a media callback created from a vlc instance
+        object : object passed from an event e.g. OnDrawReady
+
+        
+        Returns
+        ------- 
+        vlc_instance
+            A VLC media player
+        """
         vlc_media_player = self.application.vlc_instance.media_player_new()
         if platform.system() == "Linux":
             xid = object.get_window().get_xid()
