@@ -11,6 +11,7 @@ gi.require_version("GdkX11", "3.0")
 from gi.repository import GObject, Gio, Gtk, GdkX11
 
 import sys
+import platform
 import ctypes
 
 import vlc
@@ -94,24 +95,34 @@ class ApplicationWindow(object):
         self.window.set_size_request(1280, 720)
         self.window.show()
 
-    def onDrawReadyOne(self, widget,  *args):
-        player = self.application.vlc_instance.media_player_new()
-        xid = widget.get_window().get_xid()
-        player.set_xwindow(xid)
-        player.set_media(self.application.media_one)
+    def onDrawReadyOne(self, object,  *args):
+        player = self.get_vlc_mapped_to_widget(self.application.media_one, object)
         player.play()
 
     # Temporary workaround since we read stream_info from CLI and not GUI atm.
-    def onDrawReadyTwo(self, widget,  *args):
-        player = self.application.vlc_instance.media_player_new()
-        xid = widget.get_window().get_xid()
-        player.set_xwindow(xid)
-        player.set_media(self.application.media_two)
+    def onDrawReadyTwo(self, object,  *args):
+        player = self.get_vlc_mapped_to_widget(self.application.media_two, object)
         player.play()
 
     def onDelete(self, *args):
         self.application.vlc_instance.release()
         self.window.destroy()
+
+    def get_vlc_mapped_to_widget(self, media, object):
+        vlc_media_player = self.application.vlc_instance.media_player_new()
+        if platform.system() == "Linux":
+            xid = widget.get_window().get_xid()
+            vlc_media_player.set_xwindow(xid)
+        elif platform.system() == "Windows":
+            drawingWND = object.get_property("window")
+            ctypes.pythonapi.PyCapsule_GetPointer.restype = ctypes.c_void_p
+            ctypes.pythonapi.PyCapsule_GetPointer.argtypes = [ctypes.py_object]
+            drawingarea_gpointer = ctypes.pythonapi.PyCapsule_GetPointer(drawingWND.__gpointer__, None)            
+            gdkdll = ctypes.CDLL ("libgdk-3-0.dll")
+            hnd = gdkdll.gdk_win32_window_get_handle(drawingarea_gpointer)
+            vlc_media_player.set_hwnd(hnd)
+        vlc_media_player.set_media(media)
+        return vlc_media_player
 
 def main():
 
