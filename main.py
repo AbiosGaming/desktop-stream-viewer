@@ -18,14 +18,14 @@ import streamlink
 import callbacks as cb
 
 class Application(Gtk.Application):
-    
+
     def __init__(self, application_id, flags, stream_info):
         Gtk.Application.__init__(self, application_id = application_id, flags = flags)
         self.connect("activate", self.activate)
 
-        # Kick up a VLC instance. 
+        # Kick up a VLC instance.
         self.vlc_instance = vlc.Instance("--no-xlib")
-        
+
         # Streamlink streams.
         #self.stream_one = self.get_stream(stream_info[0])
         #self.stream_two = self.get_stream(stream_info[1])
@@ -37,21 +37,21 @@ class Application(Gtk.Application):
         # Create media callbacks.
         #self.media_one = self.create_media_callbacks(self.stream_one)
         #self.media_two = self.create_media_callbacks(self.stream_two)
-        opaque_one = ctypes.cast(ctypes.pointer(ctypes.py_object(self.stream_one)), ctypes.c_void_p) 
+        self.opaque_one = ctypes.cast(ctypes.pointer(ctypes.py_object(self.stream_one)), ctypes.c_void_p)
         self.media_one = self.vlc_instance.media_new_callbacks(
             cb.callbacks["read"],
             cb.callbacks["open"],
             cb.callbacks["seek"],
             cb.callbacks["close"],
-            opaque_one
+            self.opaque_one
         )
-        opaque_two = ctypes.cast(ctypes.pointer(ctypes.py_object(self.stream_one)), ctypes.c_void_p) 
+        self.opaque_two = ctypes.cast(ctypes.pointer(ctypes.py_object(self.stream_two)), ctypes.c_void_p)
         self.media_two = self.vlc_instance.media_new_callbacks(
             cb.callbacks["read"],
             cb.callbacks["open"],
             cb.callbacks["seek"],
             cb.callbacks["close"],
-            opaque_two
+            self.opaque_two
         )
 
     def activate(self, *args):
@@ -60,11 +60,11 @@ class Application(Gtk.Application):
     def get_stream(self, stream_info):
         streams = streamlink.streams(stream_info["url"])
         stream = streams[stream_info["quality"]].open()
-        
+
         return stream
 
     def create_media_callbacks(self, stream):
-        opaque = ctypes.cast(ctypes.pointer(ctypes.py_object(stream)), ctypes.c_void_p) 
+        opaque = ctypes.cast(ctypes.pointer(ctypes.py_object(stream)), ctypes.c_void_p)
         media = self.vlc_instance.media_new_callbacks(
             cb.callbacks["read"],
             cb.callbacks["open"],
@@ -76,7 +76,7 @@ class Application(Gtk.Application):
         return media
 
 class ApplicationWindow(object):
-    
+
     def __init__(self, application):
         self.application = application
 
