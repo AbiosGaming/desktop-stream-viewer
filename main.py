@@ -16,6 +16,7 @@ import ctypes
 import vlc
 import streamlink
 import callbacks as cb
+from streamContainer import StreamContainer
 
 class Application(Gtk.Application):
 
@@ -25,55 +26,14 @@ class Application(Gtk.Application):
 
         # Kick up a VLC instance.
         self.vlc_instance = vlc.Instance("--no-xlib")
+        self.streams = []
 
         # Streamlink streams.
-        #self.stream_one = self.get_stream(stream_info[0])
-        #self.stream_two = self.get_stream(stream_info[1])
-        streams = streamlink.streams(stream_info[0]["url"])
-        self.stream_one = streams[stream_info[0]["quality"]].open()
-        streams = streamlink.streams(stream_info[1]["url"])
-        self.stream_two = streams[stream_info[1]["quality"]].open()
-
-        # Create media callbacks.
-        #self.media_one = self.create_media_callbacks(self.stream_one)
-        #self.media_two = self.create_media_callbacks(self.stream_two)
-        self.opaque_one = ctypes.cast(ctypes.pointer(ctypes.py_object(self.stream_one)), ctypes.c_void_p)
-        self.media_one = self.vlc_instance.media_new_callbacks(
-            cb.callbacks["read"],
-            cb.callbacks["open"],
-            cb.callbacks["seek"],
-            cb.callbacks["close"],
-            self.opaque_one
-        )
-        self.opaque_two = ctypes.cast(ctypes.pointer(ctypes.py_object(self.stream_two)), ctypes.c_void_p)
-        self.media_two = self.vlc_instance.media_new_callbacks(
-            cb.callbacks["read"],
-            cb.callbacks["open"],
-            cb.callbacks["seek"],
-            cb.callbacks["close"],
-            self.opaque_two
-        )
+        self.streams.append(StreamContainer(self.vlc_instance, stream_info[0]))
+        self.streams.append(StreamContainer(self.vlc_instance, stream_info[1]))
 
     def activate(self, *args):
         ApplicationWindow(self)
-
-    def get_stream(self, stream_info):
-        streams = streamlink.streams(stream_info["url"])
-        stream = streams[stream_info["quality"]].open()
-
-        return stream
-
-    def create_media_callbacks(self, stream):
-        opaque = ctypes.cast(ctypes.pointer(ctypes.py_object(stream)), ctypes.c_void_p)
-        media = self.vlc_instance.media_new_callbacks(
-            cb.callbacks["read"],
-            cb.callbacks["open"],
-            cb.callbacks["seek"],
-            cb.callbacks["close"],
-            opaque
-        )
-
-        return media
 
 class ApplicationWindow(object):
 
@@ -98,7 +58,7 @@ class ApplicationWindow(object):
         player = self.application.vlc_instance.media_player_new()
         xid = widget.get_window().get_xid()
         player.set_xwindow(xid)
-        player.set_media(self.application.media_one)
+        player.set_media(self.application.streams[0].media)
         player.play()
 
     # Temporary workaround since we read stream_info from CLI and not GUI atm.
@@ -106,7 +66,7 @@ class ApplicationWindow(object):
         player = self.application.vlc_instance.media_player_new()
         xid = widget.get_window().get_xid()
         player.set_xwindow(xid)
-        player.set_media(self.application.media_two)
+        player.set_media(self.application.streams[1].media)
         player.play()
 
     def onDelete(self, *args):
