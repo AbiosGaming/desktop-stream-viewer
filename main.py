@@ -111,13 +111,13 @@ class ApplicationWindow(object):
     def get_vlc_mapped_to_widget(self, media, object):
         vlc_media_player = self.application.vlc_instance.media_player_new()
         if platform.system() == "Linux":
-            xid = widget.get_window().get_xid()
+            xid = object.get_window().get_xid()
             vlc_media_player.set_xwindow(xid)
         elif platform.system() == "Windows":
             drawingWND = object.get_property("window")
             ctypes.pythonapi.PyCapsule_GetPointer.restype = ctypes.c_void_p
             ctypes.pythonapi.PyCapsule_GetPointer.argtypes = [ctypes.py_object]
-            drawingarea_gpointer = ctypes.pythonapi.PyCapsule_GetPointer(drawingWND.__gpointer__, None)            
+            drawingarea_gpointer = ctypes.pythonapi.PyCapsule_GetPointer(drawingWND.__gpointer__, None)
             gdkdll = ctypes.CDLL ("libgdk-3-0.dll")
             hnd = gdkdll.gdk_win32_window_get_handle(drawingarea_gpointer)
             vlc_media_player.set_hwnd(hnd)
