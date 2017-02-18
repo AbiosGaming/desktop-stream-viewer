@@ -111,7 +111,7 @@ class ApplicationWindow(object):
     def get_vlc_mapped_to_widget(self, media, object):
         vlc_media_player = self.application.vlc_instance.media_player_new()
         if platform.system() == "Linux":
-            xid = widget.get_window().get_xid()
+            xid = object.get_window().get_xid()
             vlc_media_player.set_xwindow(xid)
         elif platform.system() == "Windows":
             drawingWND = object.get_property("window")
