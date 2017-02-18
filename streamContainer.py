@@ -1,13 +1,18 @@
+# -*- coding: utf-8 -*-
 import callbacks as cb
 import streamlink
 import ctypes
 
-"""
-Contains all neccesary values for libVLC
-
-_stream
-"""
 class StreamContainer(object):
+    """Contains all neccesary values for libVLC playback.
+
+    Args:
+        vlc_instance (libvlc_instance_t*): The vlc instance.
+        stream_info (dict): Holds information about stream url and stream quality.
+
+    Attributes:
+        media (libvlc_media_t*): The media object that vlc uses, includes callbacks.
+    """
     def __init__(self, vlc_instance, stream_info):
         # Get the stream from streamlink
         streams = streamlink.streams(stream_info["url"])
