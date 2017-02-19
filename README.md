@@ -55,3 +55,43 @@ Go ahead and test this ghetto application by running the command:
 
 Which if everything is working correctly should bring up a application window with the two streams side by side. 
 
+## Setup environment on Windows! (Ninja cat time!)
+
+#### 1. Python 3.4.4
+> install python 3.4.4 x64, 
+on install check the box: make path to the python.exe
+#### 2. Get VLC!
+>https://nightlies.videolan.org/build/win64/ 
+run an .exe version for 3.0.0
+
+#### 3. GTK+ 3
+> Download pygobject installer: https://sourceforge.net/projects/pygobjectwin32/
+Run the installer!
+Check GTK+ 3.xx.y
+Press next.
+Press next.
+Check Glade 3.yy (If you wish to have the gui designer)
+Press next.
+Press yes. 
+DONE!
+
+#### 4. Clone the repo:
+ ```
+ git clone https://github.com/kaszim/desktop-stream-viewer.git
+ ```
+ 
+#### 5. Install required modules using pip installer
+> cd into the repo
+First make sure pip and setuptools is on the latest version:
+```
+python -m pip install -U pip setuptools
+```
+Then install streamlink globally: 
+```
+pip install streamlink
+```
+ 
+#### 6. Run this ghetto application, yes you will be part of making it into a real application!
+  ```
+  python.exe "<pathToRepo>\main.py" https://www.twitch.tv/esl_csgo low https://www.twitch.tv/esl_csgo low
+  ```
