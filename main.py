@@ -56,20 +56,19 @@ class ApplicationWindow(object):
         self.window.show()
 
     def onDrawReadyOne(self, object,  *args):
-        player = self.get_vlc_mapped_to_widget(self.application.media_one, object)
+        player = self.get_vlc_mapped_to_widget(self.application.streams[0], object)
         player.play()
 
     # Temporary workaround since we read stream_info from CLI and not GUI atm.
     def onDrawReadyTwo(self, object,  *args):
-        player = self.get_vlc_mapped_to_widget(self.application.media_two, object)
+        player = self.get_vlc_mapped_to_widget(self.application.streams[1], object)
         player.play()
 
     def onDelete(self, *args):
         self.application.vlc_instance.release()
         self.window.destroy()
 
-    
-    def get_vlc_mapped_to_widget(self, media, object):
+    def get_vlc_mapped_to_widget(self, stream, object):
         """Creates a vlc media player and attaches it to the passed objects window
         
         For windows the object window must be interpreted by win32 as a HWND handle
@@ -98,7 +97,7 @@ class ApplicationWindow(object):
             gdkdll = ctypes.CDLL("libgdk-3-0.dll")
             hwnd = gdkdll.gdk_win32_window_get_handle(drawingarea_gpointer)
             vlc_media_player.set_hwnd(hwnd)
-        vlc_media_player.set_media(media)
+        vlc_media_player.set_media(stream.media)
         return vlc_media_player
 
 def main():
