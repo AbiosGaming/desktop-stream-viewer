@@ -55,12 +55,12 @@ class ApplicationWindow(object):
         self.window.set_size_request(1280, 720)
         self.window.show()
 
-    def onDrawReadyOne(self, object,  *args):
+    def onDrawReadyOne(self, object, *args):
         player = self.get_vlc_mapped_to_widget(self.application.streams[0], object)
         player.play()
 
     # Temporary workaround since we read stream_info from CLI and not GUI atm.
-    def onDrawReadyTwo(self, object,  *args):
+    def onDrawReadyTwo(self, object, *args):
         player = self.get_vlc_mapped_to_widget(self.application.streams[1], object)
         player.play()
 
