@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Source file containing all libVLC callbacks used to play and seek in the 
+Source file containing all libVLC callbacks used to play and seek in the
 streamed media.
 
 For more information regarding the libVLC API visit:
@@ -39,7 +39,7 @@ MediaCloseCb = ctypes.CFUNCTYPE(
 def media_open_cb(opaque, datap, sizep):
     """LibVLC callback used to point the player to the video buffer upon opening
     the media.
-    
+
     opaque: pointer to our media object.
     datap:  the libVLC video buffer.
     sizep:  length of the media stream (or sys.maxsize if unknown).
@@ -48,7 +48,9 @@ def media_open_cb(opaque, datap, sizep):
     datap.contents.value = opaque
     sizep.contents.value = sys.maxsize
 
-    return 0
+    container = ctypes.cast(opaque, ctypes.POINTER(ctypes.py_object)).contents.value
+
+    return container.open()
 
 def media_read_cb(opaque, buf, length):
     """LibVLC callback triggered by when the player is requesting more data to
@@ -59,13 +61,9 @@ def media_read_cb(opaque, buf, length):
     length: amount that should be read from the buffer.
     """
 
-    stream = ctypes.cast(opaque, ctypes.POINTER(ctypes.py_object)).contents.value
-    data = stream.read(length)
+    container = ctypes.cast(opaque, ctypes.POINTER(ctypes.py_object)).contents.value
 
-    for i in range(len(data)):
-        buf[i] = data[i]
-
-    return len(data)
+    return container.read(buf, length)
 
 def media_seek_cb(opaque, offset):
     """LibVLC callback triggered when the player seeks in the media.
@@ -73,17 +71,19 @@ def media_seek_cb(opaque, offset):
     opaque: pointer to our media object.
     offset: absolute byte offset to seek to in the media.
     """
-    
-    return 0
+    container = ctypes.cast(opaque, ctypes.POINTER(ctypes.py_object)).contents.value
+
+    return container.seek(offset)
 
 def media_close_cb(opaque):
     """LibVLC callback triggered when the player is closed.
-    
+
     opaque: pointer to our media object.
     """
 
-    stream = ctypes.cast(opaque, ctypes.POINTER(ctypes.py_object)).contents.value
-    stream.close()
+    container = ctypes.cast(opaque, ctypes.POINTER(ctypes.py_object)).contents.value
+    container.close()
+
 
 # A map for easy access to our callbacks.
 callbacks = {
