@@ -1,6 +1,6 @@
 # Python gitignores
 __pycache__/
-.pyc
+*.pyc
 
 # Common virtual environment folder names
 .venv/
