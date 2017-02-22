@@ -1,7 +1,14 @@
 # Python gitignores
 __pycache__/
+.pyc
 
 # Common virtual environment folder names
 .venv/
 venv/
 ENV/
+
+# VS Code specific
+.vscode/
+
+# Temp files
+*~
