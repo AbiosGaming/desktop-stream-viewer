@@ -4,25 +4,31 @@
 # Example application for the Abios Gaming - Desktop Stream Viewer.
 # Sven Anderzén - 2017
 
+import ctypes
+import platform
+import sys
+
 # GTK imports.
 import gi
 gi.require_version("Gtk", "3.0")
-gi.require_version("GdkX11", "3.0")
-from gi.repository import GObject, Gio, Gtk, GdkX11
+from gi.repository import Gio, GObject, Gtk
 
-import sys
-import platform
-import ctypes
-
-import vlc
 import streamlink
-import callbacks as cb
+# Rest
+import vlc
+# From this project
 from stream_container import StreamContainer
 
+
+
 class Application(Gtk.Application):
+    """The class in which the rest of the functionality lies.
+    The GUI and streams are contained within this class.
+    """
 
     def __init__(self, application_id, flags, stream_info):
-        Gtk.Application.__init__(self, application_id = application_id, flags = flags)
+        Gtk.Application.__init__(
+            self, application_id=application_id, flags=flags)
         self.connect("activate", self.activate)
 
         # Kick up a VLC instance.
@@ -36,7 +42,9 @@ class Application(Gtk.Application):
     def activate(self, *args):
         ApplicationWindow(self)
 
+
 class ApplicationWindow(object):
+    """The main GUI window. """
 
     def __init__(self, application):
         self.application = application
@@ -55,16 +63,21 @@ class ApplicationWindow(object):
         self.window.set_size_request(1280, 720)
         self.window.show()
 
-    def onDrawReadyOne(self, object, *args):
-        player = self.get_vlc_mapped_to_widget(self.application.streams[0], object)
+    def on_draw_ready_one(self, object, *args):
+        """Called when the first drawArea is ready to draw to"""
+        player = self.get_vlc_mapped_to_widget(
+            self.application.streams[0], object)
         player.play()
 
     # Temporary workaround since we read stream_info from CLI and not GUI atm.
-    def onDrawReadyTwo(self, object, *args):
-        player = self.get_vlc_mapped_to_widget(self.application.streams[1], object)
+    def on_draw_ready_two(self, object, *args):
+        """Called when the second drawArea is ready to draw to"""
+        player = self.get_vlc_mapped_to_widget(
+            self.application.streams[1], object)
         player.play()
 
-    def onDelete(self, *args):
+    def on_delete(self, *args):
+        """Called when the main window is deleted"""
         self.application.vlc_instance.release()
         self.window.destroy()
 
@@ -93,23 +106,27 @@ class ApplicationWindow(object):
             drawing_window = object.get_property("window")
             ctypes.pythonapi.PyCapsule_GetPointer.restype = ctypes.c_void_p
             ctypes.pythonapi.PyCapsule_GetPointer.argtypes = [ctypes.py_object]
-            drawingarea_gpointer = ctypes.pythonapi.PyCapsule_GetPointer(drawing_window.__gpointer__, None)
+            drawingarea_gpointer = ctypes.pythonapi.PyCapsule_GetPointer(
+                drawing_window.__gpointer__, None)
             gdkdll = ctypes.CDLL("libgdk-3-0.dll")
             hwnd = gdkdll.gdk_win32_window_get_handle(drawingarea_gpointer)
             vlc_media_player.set_hwnd(hwnd)
         vlc_media_player.set_media(stream.media)
         return vlc_media_player
 
-def main():
 
+def main():
     try:
         stream_info = [{}, {}]
-        stream_info[0]["url"], stream_info[0]["quality"] = sys.argv[1], sys.argv[2]
-        stream_info[1]["url"], stream_info[1]["quality"] = sys.argv[3], sys.argv[4]
+        stream_info[0]["url"], stream_info[0][
+            "quality"] = sys.argv[1], sys.argv[2]
+        stream_info[1]["url"], stream_info[1][
+            "quality"] = sys.argv[3], sys.argv[4]
     except Exception as e:
         sys.exit("Usage: {} <url> <quality> <url> <quality>".format(__file__))
 
-    app = Application("com.abiosgaming", Gio.ApplicationFlags.FLAGS_NONE, stream_info)
+    app = Application("com.abiosgaming",
+                      Gio.ApplicationFlags.FLAGS_NONE, stream_info)
     app.run()
 
 if __name__ == "__main__":

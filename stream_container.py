@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+import ctypes
+
 import callbacks as cb
 import streamlink
-import ctypes
+
 
 class StreamContainer(object):
     """Contains all neccesary values for libVLC playback.
@@ -13,18 +15,20 @@ class StreamContainer(object):
     Attributes:
         media (libvlc_media_t*): The media object that vlc uses, includes callbacks.
     """
+
     def __init__(self, vlc_instance, stream_info):
         # Get the stream from streamlink
         streams = streamlink.streams(stream_info["url"])
         self._stream = streams[stream_info["quality"]].open()
         # Cast this container to a c pointer to use in the callbacks
-        self._opaque = ctypes.cast(ctypes.pointer(ctypes.py_object(self)), ctypes.c_void_p)
+        self._opaque = ctypes.cast(ctypes.pointer(
+            ctypes.py_object(self)), ctypes.c_void_p)
         # Create the vlc callbacks, these will in turn call this container
         self.media = vlc_instance.media_new_callbacks(
-            cb.callbacks["read"],
-            cb.callbacks["open"],
-            cb.callbacks["seek"],
-            cb.callbacks["close"],
+            cb.CALLBACKS["read"],
+            cb.CALLBACKS["open"],
+            cb.CALLBACKS["seek"],
+            cb.CALLBACKS["close"],
             self._opaque
         )
 
@@ -44,8 +48,8 @@ class StreamContainer(object):
 
         data = self._stream.read(length)
 
-        for i in range(len(data)):
-            buf[i] = data[i]
+        for i, val in enumerate(data):
+            buf[i] = val
 
         return len(data)
 
