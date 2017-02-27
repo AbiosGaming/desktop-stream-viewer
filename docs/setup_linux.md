@@ -1,9 +1,10 @@
 ## Requirements
-The application requires `Python3`, `VLC` as well as `GTK+3` installed on the
+The application requires `Python3`, `VLC3` as well as `GTK+3` installed on the
 system. So before we continue, lets go ahead and install these.
 
-On Ubuntu the steps would be:
+First install the nightly build of VLC:
 ```
+sudo add-apt-repository ppa:videolan/master-daily
 sudo apt update
 sudo apt-get install vlc
 ```
