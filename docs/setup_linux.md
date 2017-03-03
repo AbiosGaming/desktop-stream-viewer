@@ -12,7 +12,7 @@ sudo apt-get install vlc
 GTK+ and Python3 should already be installed by default, so all we need to do is
 install the `gobject-introspection` for Python3.
 ```
-sudo apt-install python3-gi
+sudo apt-get install python3-gi
 ```
 
 ## Getting up to speed
