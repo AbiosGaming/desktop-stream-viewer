@@ -12,3 +12,9 @@ ENV/
 
 # Temp files
 *~
+
+# swp files
+.sw?
+
+# MacOS specific files
+.DS_Store
