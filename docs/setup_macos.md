@@ -2,7 +2,7 @@
 
 First off you should really install Homebrew if you haven't already. It's really nice for handling packages and software on MacOS. See [here](https://brew.sh/index_se.html) for more information about how to install Homebrew.
 
-Also make sure to install the latest VLC build [here](https://nightlies.videolan.org/build/macosx-intel/).
+Also make sure to install the latest VLC build [here](https://nightlies.videolan.org/build/macosx-intel/vlc-3.0.0-20170307-0240-git.dmg)
 
 ### Installing packages with Homebrew
 
@@ -56,8 +56,16 @@ You can always activate your previously configured virtualenv by running the abo
 While activated in your virtual environment (which we named venv), run:
 
 ```bash
-pip3 install -r requirements.txt
+pip3 install -r requirements.txt --no-binary :all:
 ```
+
+Now run this command:
+
+```bash
+export LD_LIBRARY_PATH="/Applications/VLC.app/Contents/MacOS/lib/"
+```
+
+So that the VLC image can be found. You might want to put this in your Terminal config file for the future so you don't need to export it every session.
 
 That's it!
 
@@ -65,7 +73,7 @@ That's it!
 Now for example you can run (from within the root folder of the project):
 
 ```bash
-./main.py https://www.twitch.tv/esl_csgo worst https://www.twitch.tv/esl_csgo worst
+python3 main.py https://www.twitch.tv/esl_csgo worst https://www.twitch.tv/esl_csgo worst
 ```
 
 And you're done! Phew, you can finally breathe out. Happy coding!

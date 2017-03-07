@@ -9,3 +9,4 @@ folder. Setup instructions for OSX is currently missing. If you own a Mac, and
 feel like contributing, please go ahead and add some setup steps!
 * [Windows](docs/setup_windows.md)
 * [Linux](docs/setup_linux.md)
+* [Mac](docs/setup_macos.md)
