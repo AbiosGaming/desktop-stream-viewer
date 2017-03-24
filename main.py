@@ -4,130 +4,122 @@
 # Example application for the Abios Gaming - Desktop Stream Viewer.
 # Sven Anderzén - 2017
 
-import ctypes
-import platform
 import sys
+import platform
 
-# GTK imports.
-import gi
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gio, GObject, Gtk
+# Qt imports
+from PyQt5 import QtWidgets, QtGui, uic, QtCore
 
 import streamlink
-# Rest
 import vlc
-# From this project
-from stream_container import StreamContainer
+from containers.live_stream_container import LiveStreamContainer
 
+class ApplicationWindow(QtWidgets.QMainWindow):
+    """The main GUI window."""
 
-
-class Application(Gtk.Application):
-    """The class in which the rest of the functionality lies.
-    The GUI and streams are contained within this class.
-    """
-
-    def __init__(self, application_id, flags, stream_info):
-        Gtk.Application.__init__(
-            self, application_id=application_id, flags=flags)
-        self.connect("activate", self.activate)
+    def __init__(self, stream_info):
+        super(ApplicationWindow, self).__init__(None)
+        self.setup_ui()
 
         # Kick up a VLC instance.
-        self.vlc_instance = vlc.Instance("--no-xlib")
-        self.streams = []
+        self.vlc_instance = vlc.Instance()
 
         # Streamlink streams.
-        self.streams.append(StreamContainer(self.vlc_instance, stream_info[0]))
-        self.streams.append(StreamContainer(self.vlc_instance, stream_info[1]))
+        self.streams = []
+        self.streams.append(LiveStreamContainer(self.vlc_instance, stream_info[0]))
+        self.streams.append(LiveStreamContainer(self.vlc_instance, stream_info[0]))
 
-    def activate(self, *args):
-        ApplicationWindow(self)
+        # Setup the players.
+        self.players = []
+        self.players.append(self.setup_stream(self.streams[0], 0, 0))
+        self.players.append(self.setup_stream(self.streams[1], 0, 1))
 
+    def setup_ui(self):
+        """Loads the main.ui file and sets up the window and grid."""
+        self.ui = uic.loadUi("ui/main.ui")
+        self.grid = self.ui.findChild(QtCore.QObject, "grid")
 
-class ApplicationWindow(object):
-    """The main GUI window. """
+        # Connect up all actions.
+        self.ui.findChild(QtCore.QObject, "mute_all_streams") \
+            .toggled.connect(self.mute_all_streams)
+        self.ui.findChild(QtCore.QObject, "export_all_streams") \
+            .triggered.connect(self.export_all_streams)
+        self.ui.findChild(QtCore.QObject, "add_new_stream") \
+            .triggered.connect(self.add_new_stream)
 
-    def __init__(self, application):
-        self.application = application
+        self.ui.show()
 
-        # Load Glade UI file.
-        try:
-            builder = Gtk.Builder.new_from_file("gui.glade")
-            builder.connect_signals(self)
-        except GObject.GError:
-            print("Could not read gui.glade.")
-            raise
+    def mute_all_streams(self):
+        """Toggles the audio of all the players."""
+        for player in self.players:
+            player.audio_toggle_mute()
 
-        self.window = builder.get_object("window")
-        self.window.set_application(application)
+    def export_all_streams(self):
+        """Exports all streams to the users clipboard."""
+        stream_urls = []
 
-        self.window.set_size_request(1280, 720)
-        self.window.show()
+        for stream in self.streams:
+            stream_urls.append(stream.stream_info["url"])
 
-    def on_draw_ready_one(self, object, *args):
-        """Called when the first drawArea is ready to draw to"""
-        player = self.get_vlc_mapped_to_widget(
-            self.application.streams[0], object)
-        player.play()
+        text = "\n".join(stream_urls)
 
-    # Temporary workaround since we read stream_info from CLI and not GUI atm.
-    def on_draw_ready_two(self, object, *args):
-        """Called when the second drawArea is ready to draw to"""
-        player = self.get_vlc_mapped_to_widget(
-            self.application.streams[1], object)
-        player.play()
+        clipboard = QtWidgets.QApplication.clipboard()
+        clipboard.clear(mode = clipboard.Clipboard)
+        clipboard.setText(text, mode = clipboard.Clipboard)
 
-    def on_delete(self, *args):
-        """Called when the main window is deleted"""
-        self.application.vlc_instance.release()
-        self.window.destroy()
+    def add_new_stream(self):
+        """Adds a new player for the specified stream in the grid."""
+        stream_url, status = QtWidgets.QInputDialog.getText(self, "Stream input", "Enter the stream URL:")
+        if not status:
+            return
 
-    def get_vlc_mapped_to_widget(self, stream, object):
-        """Creates a vlc media player and attaches it to the passed objects window
+        # Add streams here.
 
-        For windows the object window must be interpreted by win32 as a HWND handle
-        therefore a pointer to the drawingarea is retrieved and then the OS gives the
-        handle for its window.
-
-        Parameters
-        ----------
-        media : a media callback created from a vlc instance
-        object : object passed from an event e.g. OnDrawReady
-
-        Returns
-        -------
-        vlc_instance
-            A VLC media player
+    def setup_stream(self, stream, grid_xpos, grid_ypos):
+        """Sets up and starts to play a stream in the defined video frame
+        above.
         """
-        vlc_media_player = self.application.vlc_instance.media_player_new()
-        if platform.system() == "Linux":
-            xid = object.get_window().get_xid()
-            vlc_media_player.set_xwindow(xid)
-        elif platform.system() == "Windows":
-            drawing_window = object.get_property("window")
-            ctypes.pythonapi.PyCapsule_GetPointer.restype = ctypes.c_void_p
-            ctypes.pythonapi.PyCapsule_GetPointer.argtypes = [ctypes.py_object]
-            drawingarea_gpointer = ctypes.pythonapi.PyCapsule_GetPointer(
-                drawing_window.__gpointer__, None)
-            gdkdll = ctypes.CDLL("libgdk-3-0.dll")
-            hwnd = gdkdll.gdk_win32_window_get_handle(drawingarea_gpointer)
-            vlc_media_player.set_hwnd(hwnd)
-        vlc_media_player.set_media(stream.media)
-        return vlc_media_player
+        # Get our video frame in the grid
+        video_frame = self.get_video_frame(grid_xpos, grid_ypos)
 
+        # Create our player
+        player = self.vlc_instance.media_player_new()
+        player.set_media(stream.media)
+
+        if platform.system() == "Linux":
+            player.set_xwindow(video_frame.winId())
+        elif platform.system() == "Windows":
+            player.set_hwnd(video_frame.winId())
+        elif platform.system() == "Darwin":
+            player.set_nsobject(video_frame.winId())
+
+        player.play()
+
+        return player
+
+    def get_video_frame(self, grid_xpos, grid_ypos):
+        if platform.system() == "Darwin":
+            video_frame = QtWidgets.QMacCocoaViewContainer(0)
+        else:
+            video_frame = QtWidgets.QFrame()
+
+        # Add the frame to the global grid.
+        self.grid.addWidget(video_frame, grid_xpos, grid_ypos)
+
+        return video_frame
 
 def main():
     try:
         stream_info = [{}, {}]
-        stream_info[0]["url"], stream_info[0][
-            "quality"] = sys.argv[1], sys.argv[2]
-        stream_info[1]["url"], stream_info[1][
-            "quality"] = sys.argv[3], sys.argv[4]
+        stream_info[0]["url"], stream_info[0]["quality"] = sys.argv[1], sys.argv[2]
     except Exception as e:
-        sys.exit("Usage: {} <url> <quality> <url> <quality>".format(__file__))
+        sys.exit("Usage: {} <url> <quality>".format(__file__))
 
-    app = Application("com.abiosgaming",
-                      Gio.ApplicationFlags.FLAGS_NONE, stream_info)
-    app.run()
+    app = QtWidgets.QApplication([])
+
+    window = ApplicationWindow(stream_info)
+
+    sys.exit(app.exec_())
 
 if __name__ == "__main__":
     main()

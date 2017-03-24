@@ -1,5 +1,5 @@
 ## Description
-This is a work in progress GTK+3 application for playing live video streams
+This is a work in progress Qt5 application for playing live video streams
 using Streamlink and libVLC callbacks. It provides complete access to the stream
 data provided by the Streamlink API and full coverage of the libVLC API.
 

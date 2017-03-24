@@ -1,5 +1,5 @@
 ## Requirements
-The application requires `Python3`, `VLC3` as well as `GTK+3` installed on the
+The application requires `Python3`, `VLC3` as well as `Qt5` installed on the 
 system. So before we continue, lets go ahead and install these.
 
 First install the nightly build of VLC:
@@ -9,12 +9,10 @@ sudo apt update
 sudo apt-get install vlc
 ```
 
-GTK+ and Python3 should already be installed by default, so all we need to do is
-install the `gobject-introspection` for Python3.
+If Qt5 is not installed by default, go ahead and install that.
 ```
-sudo apt-get install python3-gi
+sudo apt-get install qt5-default
 ```
-
 ## Getting up to speed
 Before continuing, clone the repo to your local computer.
 ```
@@ -35,8 +33,8 @@ Create your virtualenvironment using:
 virtualenv venv --system-site-packages
 ```
 where `venv` is the name of your virtual environment. This will create a new
-folder named `venv`. The `--system-site-packages` argument is required to access
-the shared GTK+ libraries (`gi`).
+folder named `venv`. The `--system-site-packages` will allow your to access 
+shared libraries from your virtual environment.
 
 Start the virtual environment by using:
 ```
@@ -54,10 +52,10 @@ pip install -r requirements.txt
 Go ahead and test the application by running the following command (inside the
 repository folder):
 ```
-./main.py https://www.twitch.tv/esl_csgo low https://www.twitch.tv/esl_csgo low
+./main.py https://www.twitch.tv/esl_csgo low
 ```
 
 Which if everything is working correctly should bring up a application window
-with the two streams side by side. If no application window appear, be sure to
-check that the stream `https://www.twitch.tv/esl_csgo` is currently
-broadcasting. If not, go ahead and change the urls the to streams you wish to view.
+with the stream. If no application window appear, be sure to check that the 
+stream `https://www.twitch.tv/esl_csgo` is currently broadcasting. If not, 
+go ahead and change the urls the to streams you wish to view.

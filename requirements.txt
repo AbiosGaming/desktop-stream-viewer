@@ -1,1 +1,2 @@
-streamlink
+streamlink == 0.4.0
+pyqt5      == 5.8.1.1
