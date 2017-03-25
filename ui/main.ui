@@ -928,7 +928,7 @@
      <string>File</string>
     </property>
     <addaction name="add_new_stream"/>
-    <addaction name="export_all_streams"/>
+    <addaction name="export_streams_to_clipboard"/>
    </widget>
    <widget class="QMenu" name="settings">
     <property name="palette">
@@ -2295,9 +2295,9 @@
     <string>Ctrl+O</string>
    </property>
   </action>
-  <action name="export_all_streams">
+  <action name="export_streams_to_clipboard">
    <property name="text">
-    <string>Export all streams</string>
+    <string>Export streams to clipboard</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+E</string>

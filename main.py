@@ -42,8 +42,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         # Connect up all actions.
         self.ui.findChild(QtCore.QObject, "mute_all_streams") \
             .toggled.connect(self.mute_all_streams)
-        self.ui.findChild(QtCore.QObject, "export_all_streams") \
-            .triggered.connect(self.export_all_streams)
+        self.ui.findChild(QtCore.QObject, "export_streams_to_clipboard") \
+            .triggered.connect(self.export_streams_to_clipboard)
         self.ui.findChild(QtCore.QObject, "add_new_stream") \
             .triggered.connect(self.add_new_stream)
 
@@ -54,7 +54,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         for player in self.players:
             player.audio_toggle_mute()
 
-    def export_all_streams(self):
+    def export_streams_to_clipboard(self):
         """Exports all streams to the users clipboard."""
         stream_urls = []
 
