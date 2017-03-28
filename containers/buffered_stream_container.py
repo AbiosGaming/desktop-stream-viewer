@@ -3,11 +3,11 @@ import streamlink
 from collections import deque
 from containers.stream_container import StreamContainer
 
-class LiveStreamContainer(StreamContainer):
+class BufferedStreamContainer(StreamContainer):
     """This class representas a **live** stream and contains all information 
     regarding it's media.
 
-    The LiveStreamContainer pulls all of it's video data directly from the 
+    The BufferedStreamContainer pulls all of it's video data directly from the 
     livestream itself, while at the same time caching away previous data in a 
     buffer.
     """
