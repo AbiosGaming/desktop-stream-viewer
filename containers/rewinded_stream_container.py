@@ -11,6 +11,7 @@ class RewindedStreamContainer(StreamContainer):
     """
     def __init__(self, vlc_instance, stream_info, stream_buffer):
         super().__init__(vlc_instance, stream_info)
+        self.create_callbacks(vlc_instance)
 
         self.buffer = copy.deepcopy(stream_buffer)
 

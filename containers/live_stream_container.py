@@ -13,7 +13,7 @@ class LiveStreamContainer(StreamContainer):
     """
     def __init__(self, vlc_instance, stream_info, buffer_length=200):
         super().__init__(vlc_instance, stream_info)
-
+        self.create_callbacks(vlc_instance)
         streams = streamlink.streams(stream_info["url"])
         self._stream = streams[stream_info["quality"]].open()
         self.buffer = deque(maxlen=buffer_length)
@@ -27,6 +27,10 @@ class LiveStreamContainer(StreamContainer):
         
         Reads 'length' video data directly from the stream, as well as caches
         it away in the buffer accordingly. 
+        
+        Args:
+            buf (LP_c_char):    char pointer to the video buffer.
+            length:             amount that should be read from the buffer.
         """
         data = self._stream.read(length)
         self.buffer.append(data)

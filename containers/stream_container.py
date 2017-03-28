@@ -15,11 +15,19 @@ class StreamContainer(ABC):
         media (libvlc_media_t*): The media object that vlc uses, includes callbacks.
     """
     def __init__(self, vlc_instance, stream_info):
+        self.stream_info = stream_info
+
+    def create_callbacks(self, vlc_instance):
+        """Initializes the media attribute to use callbacks that are contained within
+        this object.
+        
+        Do not call this if you are to use another method of supplying vlc
+        with video data."""
         # Cast this container to a c pointer to use in the callbacks
         self._opaque = ctypes.cast(ctypes.pointer(
             ctypes.py_object(self)), ctypes.c_void_p)
-        
-        # Create the vlc callbacks, these will in turn call the methods defined 
+
+        # Create the vlc callbacks, these will in turn call the methods defined
         # in this container
         self.media = vlc_instance.media_new_callbacks(
             cb.CALLBACKS["read"],
@@ -28,8 +36,6 @@ class StreamContainer(ABC):
             cb.CALLBACKS["close"],
             self._opaque
         )
-
-        self.stream_info = stream_info
 
     @abstractmethod
     def open(self):
