@@ -13,6 +13,7 @@ from PyQt5 import QtWidgets, QtGui, uic, QtCore
 import streamlink
 import vlc
 from containers.buffered_stream_container import BufferedStreamContainer
+from containers.piped_stream_container import PipedStreamContainer
 
 class ApplicationWindow(QtWidgets.QMainWindow):
     """The main GUI window."""
@@ -27,7 +28,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         # Streamlink streams.
         self.streams = []
         self.streams.append(BufferedStreamContainer(self.vlc_instance, stream_info[0]))
-        self.streams.append(BufferedStreamContainer(self.vlc_instance, stream_info[0]))
+        self.streams.append(PipedStreamContainer(self.vlc_instance, stream_info[0]))
 
         # Setup the players.
         self.players = []
