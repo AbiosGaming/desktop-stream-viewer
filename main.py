@@ -28,7 +28,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         # Streamlink streams.
         self.streams = []
         self.streams.append(BufferedStreamContainer(self.vlc_instance, stream_info[0]))
-        self.streams.append(PipedStreamContainer(self.vlc_instance, stream_info[0]))
+        self.streams.append(PipedStreamContainer(self.vlc_instance, stream_info[0], "videopipe1"))
 
         # Setup the players.
         self.players = []

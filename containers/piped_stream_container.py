@@ -13,11 +13,11 @@ class PipedStreamContainer(StreamContainer):
     livestream itself, while at the same time caching away previous data in a
     buffer.
     """
-    def __init__(self, vlc_instance, stream_info, buffer_length=200):
+    def __init__(self, vlc_instance, stream_info, pipename, buffer_length=200):
         super().__init__(vlc_instance, stream_info)
 
-        self.pipe = NamedPipe("testpipe")
-        self.media = vlc_instance.media_new("stream://\\\\\\.\\pipe\\" + "testpipe")
+        self.pipe = NamedPipe(pipename)
+        self.media = vlc_instance.media_new("stream://\\\\\\.\\pipe\\" + pipename)
         streams = streamlink.streams(stream_info["url"])
         self._stream = streams[stream_info["quality"]].open()
         # self.buffer = deque(maxlen=buffer_length)
