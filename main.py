@@ -17,22 +17,27 @@ from containers.live_stream_container import LiveStreamContainer
 class ApplicationWindow(QtWidgets.QMainWindow):
     """The main GUI window."""
 
-    def __init__(self, stream_info):
+    def __init__(self):
         super(ApplicationWindow, self).__init__(None)
         self.setup_ui()
 
         # Kick up a VLC instance.
-        self.vlc_instance = vlc.Instance()
+        self.vlc_instance = vlc.Instance("--no-xlib")
+
+        # TODO:
+        # Maybe we should explain what kind of coordinates these are?
+        # It is probably also a good idea to only have one attribute,
+        # called new_stream_coordinates (or something similar) and let
+        # it be a tuple of x, y.
+        # Set coordinates
+        self.x = 0
+        self.y = 0
 
         # Streamlink streams.
         self.streams = []
-        self.streams.append(LiveStreamContainer(self.vlc_instance, stream_info[0]))
-        self.streams.append(LiveStreamContainer(self.vlc_instance, stream_info[0]))
 
         # Setup the players.
         self.players = []
-        self.players.append(self.setup_stream(self.streams[0], 0, 0))
-        self.players.append(self.setup_stream(self.streams[1], 0, 1))
 
     def setup_ui(self):
         """Loads the main.ui file and sets up the window and grid."""
@@ -72,6 +77,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         stream_url, status = QtWidgets.QInputDialog.getText(self, "Stream input", "Enter the stream URL:")
         if not status:
             return
+        new_stream = {"url": "twitch.tv/esl_csgo", "quality": "480p30"}
+        new_container = LiveStreamContainer(self.vlc_instance, new_stream)
+        self.setup_stream(new_container, self.x, self.y)
+        self.new_coordinates()
 
         # Add streams here.
 
@@ -108,16 +117,30 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         return video_frame
 
+    # TODO:
+    # Perhaps update_new_stream_coordinates() is a
+    # better suited name for the function?
+    def new_coordinates(self):
+        # TODO:
+        # Docstring missing and some explanation on what the code
+        # does is missing.
+        if self.y == self.x:
+            self.y += 1
+            self.x = 0
+        elif self.y == self.x + 1:
+            self.x = self.y
+            self.y = 0
+        else:
+            if self.x < self.y:
+                self.x += 1
+            else:
+                self.y += 1
+
 def main():
-    try:
-        stream_info = [{}, {}]
-        stream_info[0]["url"], stream_info[0]["quality"] = sys.argv[1], sys.argv[2]
-    except Exception as e:
-        sys.exit("Usage: {} <url> <quality>".format(__file__))
 
     app = QtWidgets.QApplication([])
 
-    window = ApplicationWindow(stream_info)
+    window = ApplicationWindow()
 
     sys.exit(app.exec_())
 
