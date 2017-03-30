@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import streamlink
 import threading
+import time
 from streamlink.utils.named_pipe import NamedPipe
 from collections import deque
 from containers.stream_container import StreamContainer
@@ -18,10 +19,8 @@ class PipedStreamContainer(StreamContainer):
 
         self.pipe = NamedPipe(pipename)
         self.media = vlc_instance.media_new("stream://\\\\\\.\\pipe\\" + pipename)
-        streams = streamlink.streams(stream_info["url"])
-        self._stream = streams[stream_info["quality"]].open()
         # self.buffer = deque(maxlen=buffer_length)
-        self.readWorker = ReadWorker(self)
+        self.readWorker = ReadWorker(self, stream_info)
         # Only used by UNIX systems (this is handled within the named pipe)
         self.pipe.open("wb")
         self.readWorker.start()
@@ -52,10 +51,13 @@ class PipedStreamContainer(StreamContainer):
         self.pipe.close()
 
 class ReadWorker(threading.Thread):
-    def __init__(self, container):
+    def __init__(self, container, stream_info):
         threading.Thread.__init__(self)
         self.container = container
+        self.stream_info = stream_info
 
     def run(self):
+        streams = streamlink.streams(self.stream_info["url"])
+        self.container._stream = streams[self.stream_info["quality"]].open()
         while True:
             self.container.read()
