@@ -12,7 +12,7 @@ from PyQt5 import QtWidgets, QtGui, uic, QtCore
 
 import streamlink
 import vlc
-from containers.live_stream_container import LiveStreamContainer
+from videoframes import LiveVideoFrame
 
 class ApplicationWindow(QtWidgets.QMainWindow):
     """The main GUI window."""
@@ -33,11 +33,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.x = 0
         self.y = 0
 
-        # Streamlink streams.
-        self.streams = []
-
-        # Setup the players.
-        self.players = []
+        # List of video frames.
+        self.videoframes = []
 
     def setup_ui(self):
         """Loads the main.ui file and sets up the window and grid."""
@@ -45,8 +42,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.grid = self.ui.findChild(QtCore.QObject, "grid")
 
         # Connect up all actions.
-        self.ui.findChild(QtCore.QObject, "mute_all_streams") \
-            .toggled.connect(self.mute_all_streams)
+        self.actions = {}
+        self.actions["mute_checkbox"] = self.ui.findChild(QtCore.QObject, "mute_all_streams")
+        self.actions["mute_checkbox"].toggled.connect(self.mute_all_streams)
+
         self.ui.findChild(QtCore.QObject, "export_streams_to_clipboard") \
             .triggered.connect(self.export_streams_to_clipboard)
         self.ui.findChild(QtCore.QObject, "add_new_stream") \
@@ -56,15 +55,19 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
     def mute_all_streams(self):
         """Toggles the audio of all the players."""
-        for player in self.players:
-            player.audio_toggle_mute()
+        for videoframe in self.videoframes:
+            if self.actions["mute_checkbox"].isChecked():
+                videoframe.player.audio_set_mute(True)
+            else:
+                if not videoframe.is_muted:
+                    videoframe.player.audio_set_mute(False)
 
     def export_streams_to_clipboard(self):
         """Exports all streams to the users clipboard."""
         stream_urls = []
 
-        for stream in self.streams:
-            stream_urls.append(stream.stream_info["url"])
+        for videoframe in self.videoframes:
+            stream_urls.append(videoframe.stream.url)
 
         text = "\n".join(stream_urls)
 
@@ -78,44 +81,17 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         if not status:
             return
         new_stream = {"url": "twitch.tv/esl_csgo", "quality": "480p30"}
-        new_container = LiveStreamContainer(self.vlc_instance, new_stream)
-        self.setup_stream(new_container, self.x, self.y)
+        self.setup_videoframe(new_stream, self.x, self.y)
         self.new_coordinates()
 
         # Add streams here.
 
-    def setup_stream(self, stream, grid_xpos, grid_ypos):
-        """Sets up and starts to play a stream in the defined video frame
-        above.
-        """
-        # Get our video frame in the grid
-        video_frame = self.get_video_frame(grid_xpos, grid_ypos)
+    def setup_videoframe(self, stream_info, grid_xpos, grid_ypos):
+        """Sets ups a videoframe and with the provided stream information."""
+        videoframe = LiveVideoFrame(self.vlc_instance, stream_info)
+        self.grid.addWidget(videoframe, grid_xpos, grid_ypos)
 
-        # Create our player
-        player = self.vlc_instance.media_player_new()
-        player.set_media(stream.media)
-
-        if platform.system() == "Linux":
-            player.set_xwindow(video_frame.winId())
-        elif platform.system() == "Windows":
-            player.set_hwnd(video_frame.winId())
-        elif platform.system() == "Darwin":
-            player.set_nsobject(video_frame.winId())
-
-        player.play()
-
-        return player
-
-    def get_video_frame(self, grid_xpos, grid_ypos):
-        if platform.system() == "Darwin":
-            video_frame = QtWidgets.QMacCocoaViewContainer(0)
-        else:
-            video_frame = QtWidgets.QFrame()
-
-        # Add the frame to the global grid.
-        self.grid.addWidget(video_frame, grid_xpos, grid_ypos)
-
-        return video_frame
+        return videoframe
 
     # TODO:
     # Perhaps update_new_stream_coordinates() is a
