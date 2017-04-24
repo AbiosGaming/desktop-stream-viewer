@@ -14,6 +14,8 @@ import streamlink
 import vlc
 from videoframes import LiveVideoFrame
 from constants import *
+from coordinates import StreamCoordinates
+
 
 class ApplicationWindow(QtWidgets.QMainWindow):
     """The main GUI window."""
@@ -31,8 +33,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         # called new_stream_coordinates (or something similar) and let
         # it be a tuple of x, y.
         # Set coordinates
-        self.x = 0
-        self.y = 0
+        self.coordinates = StreamCoordinates(x=0, y=0)
 
         # List of video frames.
         self.videoframes = []
@@ -73,24 +74,24 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         text = "\n".join(stream_urls)
 
         clipboard = QtWidgets.QApplication.clipboard()
-        clipboard.clear(mode = clipboard.Clipboard)
-        clipboard.setText(text, mode = clipboard.Clipboard)
+        clipboard.clear(mode=clipboard.Clipboard)
+        clipboard.setText(text, mode=clipboard.Clipboard)
 
     def add_new_stream(self):
         """Adds a new player for the specified stream in the grid."""
         stream_url, status = QtWidgets.QInputDialog.getText(self, "Stream input", "Enter the stream URL:")
         if not status:
             return
-        new_stream = {"url": "twitch.tv/esl_csgo", "quality": "480p30"}
-        self.setup_videoframe(new_stream, self.x, self.y)
+        new_stream = {"url": stream_url, "quality": "480p30"}
+        self.setup_videoframe(new_stream, self.coordinates)
         self.new_coordinates()
 
-        # Add streams here.
+        # TODO: Add streams here.
 
-    def setup_videoframe(self, stream_info, grid_xpos, grid_ypos):
+    def setup_videoframe(self, stream_info, coordinates):
         """Sets ups a videoframe and with the provided stream information."""
         videoframe = LiveVideoFrame(self.vlc_instance, stream_info)
-        self.grid.addWidget(videoframe, grid_xpos, grid_ypos)
+        self.grid.addWidget(videoframe, coordinates.x, coordinates.y)
 
         return videoframe
 
@@ -101,25 +102,14 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         # TODO:
         # Docstring missing and some explanation on what the code
         # does is missing.
-        if self.y == self.x:
-            self.y += 1
-            self.x = 0
-        elif self.y == self.x + 1:
-            self.x = self.y
-            self.y = 0
-        else:
-            if self.x < self.y:
-                self.x += 1
-            else:
-                self.y += 1
+        self.coordinates = self.coordinates.new_coordinates()
+
 
 def main():
-
     app = QtWidgets.QApplication([])
-
     window = ApplicationWindow()
-
     sys.exit(app.exec_())
+
 
 if __name__ == "__main__":
     main()
