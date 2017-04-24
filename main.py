@@ -13,6 +13,7 @@ from PyQt5 import QtWidgets, QtGui, uic, QtCore
 import streamlink
 import vlc
 from videoframes import LiveVideoFrame
+from constants import *
 
 class ApplicationWindow(QtWidgets.QMainWindow):
     """The main GUI window."""
@@ -43,12 +44,12 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         # Connect up all actions.
         self.actions = {}
-        self.actions["mute_checkbox"] = self.ui.findChild(QtCore.QObject, "mute_all_streams")
-        self.actions["mute_checkbox"].toggled.connect(self.mute_all_streams)
+        self.actions[MUTE_CHECKBOX] = self.ui.findChild(QtCore.QObject, MUTE_ALL_STREAMS)
+        self.actions[MUTE_CHECKBOX].toggled.connect(self.mute_all_streams)
 
-        self.ui.findChild(QtCore.QObject, "export_streams_to_clipboard") \
+        self.ui.findChild(QtCore.QObject, EXPORT_STREAMS_TO_CLIPBOARD) \
             .triggered.connect(self.export_streams_to_clipboard)
-        self.ui.findChild(QtCore.QObject, "add_new_stream") \
+        self.ui.findChild(QtCore.QObject, ADD_NEW_STREAM) \
             .triggered.connect(self.add_new_stream)
 
         self.ui.show()
@@ -56,7 +57,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
     def mute_all_streams(self):
         """Toggles the audio of all the players."""
         for videoframe in self.videoframes:
-            if self.actions["mute_checkbox"].isChecked():
+            if self.actions[MUTE_CHECKBOX].isChecked():
                 videoframe.player.audio_set_mute(True)
             else:
                 if not videoframe.is_muted:
