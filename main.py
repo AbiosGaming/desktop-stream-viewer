@@ -86,13 +86,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.setup_videoframe(new_stream, self.coordinates)
         self.new_coordinates()
 
-        # TODO: Add streams here.
-
     def setup_videoframe(self, stream_info, coordinates):
         """Sets ups a videoframe and with the provided stream information."""
         videoframe = LiveVideoFrame(self.vlc_instance, stream_info)
         self.grid.addWidget(videoframe, coordinates.x, coordinates.y)
-
+        self.videoframes.append(videoframe)
         return videoframe
 
     # TODO:
