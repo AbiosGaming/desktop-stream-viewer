@@ -12,6 +12,7 @@ from PyQt5 import QtWidgets, QtGui, uic, QtCore
 
 import streamlink
 import vlc
+from containers import LiveStreamContainer
 from videoframes import LiveVideoFrame
 from constants import *
 from coordinates import StreamCoordinates
@@ -77,16 +78,42 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         clipboard.clear(mode=clipboard.Clipboard)
         clipboard.setText(text, mode=clipboard.Clipboard)
 
-    def add_new_stream(self):
+    def add_new_stream(self, *args, stream_url=None, stream_quality="480p30"):
         """Adds a new player for the specified stream in the grid."""
-        stream_url, status = QtWidgets.QInputDialog.getText(self, "Stream input", "Enter the stream URL:")
-        if not status:
-            return
-        new_stream = {"url": stream_url, "quality": "480p30"}
-        self.setup_videoframe(new_stream, self.coordinates)
-        self.new_coordinates()
+        if not stream_url:
+             stream_url, ok = QtWidgets.QInputDialog.getText(self, "Stream input", "Enter the stream URL:")
 
-        # TODO: Add streams here.
+             if not ok:
+                return
+
+        new_stream = {"url": stream_url, "quality": stream_quality}
+
+        try:
+            self.setup_videoframe(new_stream, self.coordinates)
+            self.new_coordinates()
+        except KeyError:
+            filtered_qualities = LiveStreamContainer.filtered_quality_options(
+                streamlink.streams(stream_url)
+            )
+
+            stream_quality, ok = QtWidgets.QInputDialog.getItem(self,
+                "Stream Quality option",
+                """The default stream quality option could not be used.
+                Please select another one:""",
+                reversed(filtered_qualities)
+            )
+
+            if not ok:
+                return
+
+            self.add_new_stream(stream_url=stream_url, stream_quality=stream_quality)
+        except streamlink.exceptions.NoPluginError:
+            error_window = QtWidgets.QMessageBox().warning(self,
+                "Error",
+                "Could not open stream: The provided URL is not supported"
+            )
+
+            self.add_new_stream()
 
     def setup_videoframe(self, stream_info, coordinates):
         """Sets ups a videoframe and with the provided stream information."""
