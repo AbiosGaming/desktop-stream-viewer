@@ -143,7 +143,9 @@ class RewindedStreamContainer(StreamContainer):
     def __init__(self, vlc_instance, stream_buffer):
         super().__init__(vlc_instance)
 
-        self.buffer = copy.deepcopy(stream_buffer)
+        self.buffer = list(stream_buffer)
+        self.curr = 0
+        self.on_seek = None
 
     def open(self):
         """Called by libVLC upon opening the media. Not currently used."""
@@ -154,20 +156,30 @@ class RewindedStreamContainer(StreamContainer):
 
         Reads 'length' video data directly from the copied buffer.
         """
-        # If we've played the whole buffer, send EOS (End of Stream).
-        if len(self.buffer) == 0:
-            return 0
+        # If we have no data to read HACK:
+        if self.curr >= len(self.buffer):
+            # Force vlc to continue reading some arbitrary data
+            # as we may want to seek
+            buf[0] = 1
+            return 2
 
-        data = self.buffer.popleft()
+        data = self.buffer[self.curr]
         for i, val in enumerate(data):
             buf[i] = val
 
+        self.curr = (self.curr + 1)
+
         return len(data)
 
-    def seek(self):
+    def seek(self, offset):
         """Called by libVLC upon seeking in the media."""
+        # Set the current pointer to the correct location
+        self.curr = int((offset/2**62) * self.curr)
+        if self.on_seek is not None:
+            self.on_seek(offset)
         return 0
 
     def close(self):
         """Called by libVLC upon closing the media."""
         return 0
+
