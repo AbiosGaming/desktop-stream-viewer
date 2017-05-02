@@ -29,7 +29,7 @@ class _VideoFrame(QtWidgets.QFrame):
         self.draw_area = self.findChild(QtCore.QObject, "drawArea")
         # Connect the playback toggle to the toolbox
         # TODO: Some other solution
-        self.findChild(QtCore.QObject, "toolButton").clicked.connect(self.toggle_playback)
+        self.findChild(QtCore.QObject, "toolButton").clicked.connect(self.fullscreen)
 
         # Bind the player
         if platform.system() == "Linux":
@@ -56,12 +56,7 @@ class _VideoFrame(QtWidgets.QFrame):
         user_action = self.context_menu.exec_(self.mapToGlobal(event.pos()))
 
         if user_action == self.mute_action:
-            if self.player.audio_get_mute():
-                self.player.audio_set_mute(False)
-                self.is_muted = False
-            else:
-                self.player.audio_set_mute(True)
-                self.is_muted = True
+            self.toggle_mute()
 
         return user_action
 
@@ -77,6 +72,20 @@ class _VideoFrame(QtWidgets.QFrame):
             self.player.pause()
         else:
             self.player.play()
+
+    def toggle_mute(self):
+        if self.player.audio_get_mute():
+            self.player.audio_set_mute(False)
+            self.is_muted = False
+        else:
+            self.player.audio_set_mute(True)
+            self.is_muted = True
+
+    def fullscreen(self):
+        """Fullscreens the videoframe"""
+        # Call the method supplied by the parent function
+        # Which hides all other videoframes but this one
+        self._fullscreen(self)
 
 class LiveVideoFrame(_VideoFrame):
     """A class representing a VideoFrame containing a **live** stream.
