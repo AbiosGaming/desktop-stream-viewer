@@ -119,6 +119,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         """Sets ups a videoframe and with the provided stream information."""
         videoframe = LiveVideoFrame(self.vlc_instance, stream_info)
         self.grid.addWidget(videoframe, coordinates.x, coordinates.y)
+        self.videoframes.append(videoframe)
 
         return videoframe
 
