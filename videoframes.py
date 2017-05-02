@@ -15,6 +15,10 @@ class _VideoFrame(QtWidgets.QFrame):
     def __init__(self, vlc_instance):
         super(_VideoFrame, self).__init__()
         self.player = vlc_instance.media_player_new()
+        # Remove input handling from vlc, and give it back
+        self.player.video_set_mouse_input(False)
+        # key also have to be taken back for mouse input
+        self.player.video_set_key_input(False)
 
         self.is_muted = False
 
