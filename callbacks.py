@@ -36,6 +36,7 @@ MEDIA_CLOSE_CB = ctypes.CFUNCTYPE(
     ctypes.c_void_p
 )
 
+
 def media_open_cb(opaque, datap, sizep):
     """LibVLC callback used to point the player to the video buffer upon opening
     the media.
@@ -53,6 +54,7 @@ def media_open_cb(opaque, datap, sizep):
 
     return container.open()
 
+
 def media_read_cb(opaque, buf, length):
     """LibVLC callback triggered by when the player is requesting more data to
     be read into the video buffer.
@@ -67,6 +69,7 @@ def media_read_cb(opaque, buf, length):
 
     return container.read(buf, length)
 
+
 def media_seek_cb(opaque, offset):
     """LibVLC callback triggered when the player seeks in the media.
 
@@ -78,6 +81,7 @@ def media_seek_cb(opaque, offset):
 
     return container.seek(offset)
 
+
 def media_close_cb(opaque):
     """LibVLC callback triggered when the player is closed.
 
@@ -87,6 +91,7 @@ def media_close_cb(opaque):
     container = ctypes.cast(opaque, ctypes.POINTER(
         ctypes.py_object)).contents.value
     container.close()
+
 
 # A map for easy access to our callbacks.
 CALLBACKS = {

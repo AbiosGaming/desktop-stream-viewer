@@ -2,11 +2,12 @@
 
 import platform
 import sys
-import time
 
-from PyQt5 import QtWidgets, QtCore, QtGui, uic
+from PyQt5 import QtWidgets, QtCore, uic
+
+from constants import FRAME_SELECT_STYLE, SLIDER_MAX_VALUE
 from containers import LiveStreamContainer, RewindedStreamContainer
-from constants import *
+
 
 class _VideoFrame(QtWidgets.QFrame):
     """An class representing a QFrame object containing a libVLC media player.
@@ -14,6 +15,7 @@ class _VideoFrame(QtWidgets.QFrame):
     Args:
         vlc_instance: VLC instance object.
     """
+
     def __init__(self, vlc_instance):
         super(_VideoFrame, self).__init__()
         self.player = vlc_instance.media_player_new()
@@ -26,7 +28,7 @@ class _VideoFrame(QtWidgets.QFrame):
         self.setup_ui()
 
         self.is_muted = False
-        self.selected = False        
+        self.selected = False
 
     def setup_ui(self):
         uic.loadUi("ui/frame.ui", self)
@@ -101,6 +103,7 @@ class _VideoFrame(QtWidgets.QFrame):
         else:
             self.select()
 
+
 class LiveVideoFrame(_VideoFrame):
     """A class representing a VideoFrame containing a **live** stream.
 
@@ -109,6 +112,7 @@ class LiveVideoFrame(_VideoFrame):
         stream_info: Dictionary containing the URL ('url') as well as the
             quality ('quality') of the requested stream.
     """
+
     def __init__(self, vlc_instance, stream_info):
         super(LiveVideoFrame, self).__init__(vlc_instance)
         self.vlc_instance = vlc_instance
@@ -172,6 +176,7 @@ class LiveVideoFrame(_VideoFrame):
             self.rewinded = RewindedVideoFrame(self.vlc_instance, self.stream.buffer, self)
             self.rewinded.show()
 
+
 class RewindedVideoFrame(_VideoFrame):
     """A class representing a VideoFrame containing a **rewinded** stream.
 
@@ -180,6 +185,7 @@ class RewindedVideoFrame(_VideoFrame):
         stream_buffer: A reference to the buffer that should be copied and
             played from.
     """
+
     def __init__(self, vlc_instance, stream_buffer, parent):
         super(RewindedVideoFrame, self).__init__(vlc_instance)
         # Set the parent
@@ -235,12 +241,12 @@ class RewindedVideoFrame(_VideoFrame):
     def scrub(self):
         """Called whenever the slider is released, which is followed by a scrub
         """
-        self.player.set_position(self.slider.value()/SLIDER_MAX_VALUE)
+        self.player.set_position(self.slider.value() / SLIDER_MAX_VALUE)
 
     def update_slider_value(self):
         """Updates the slider with a guesstimate of video position
         """
         # Some guessing magic to get the timing right, kind of works for 480p30
-        percentage_played = self.player.get_time()/(145*len(self.stream.buffer))
+        percentage_played = self.player.get_time() / (145 * len(self.stream.buffer))
         if not self.slider.pressed:
-            self.slider.setValue(percentage_played*SLIDER_MAX_VALUE)
+            self.slider.setValue(percentage_played * SLIDER_MAX_VALUE)

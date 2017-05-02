@@ -5,17 +5,16 @@
 # Sven Anderzén - 2017
 
 import sys
-import platform
-
-# Qt imports
-from PyQt5 import QtWidgets, QtGui, uic, QtCore
 
 import streamlink
+# Qt imports
+from PyQt5 import QtWidgets, uic, QtCore
+
 import vlc
+from constants import MUTE_CHECKBOX, MUTE_ALL_STREAMS, EXPORT_STREAMS_TO_CLIPBOARD, ADD_NEW_STREAM
 from containers import LiveStreamContainer
-from videoframes import LiveVideoFrame
-from constants import *
 from coordinates import StreamCoordinates
+from videoframes import LiveVideoFrame
 
 
 class ApplicationWindow(QtWidgets.QMainWindow):
@@ -84,9 +83,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
     def add_new_stream(self, *args, stream_url=None, stream_quality="best"):
         """Adds a new player for the specified stream in the grid."""
         if not stream_url:
-             stream_url, ok = QtWidgets.QInputDialog.getText(self, "Stream input", "Enter the stream URL:")
+            stream_url, ok = QtWidgets.QInputDialog.getText(self, "Stream input", "Enter the stream URL:")
 
-             if not ok:
+            if not ok:
                 return
 
         new_stream = {"url": stream_url, "quality": stream_quality}
@@ -100,11 +99,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             )
 
             stream_quality, ok = QtWidgets.QInputDialog.getItem(self,
-                "Stream Quality option",
-                """The default stream quality option could not be used.
-                Please select another one:""",
-                reversed(filtered_qualities)
-            )
+                                                                "Stream Quality option",
+                                                                """The default stream quality option could not be used.
+                                                                Please select another one:""",
+                                                                reversed(filtered_qualities)
+                                                                )
 
             if not ok:
                 return
@@ -112,9 +111,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             self.add_new_stream(stream_url=stream_url, stream_quality=stream_quality)
         except streamlink.exceptions.NoPluginError:
             error_window = QtWidgets.QMessageBox().warning(self,
-                "Error",
-                "Could not open stream: The provided URL is not supported"
-            )
+                                                           "Error",
+                                                           "Could not open stream: The provided URL is not supported"
+                                                           )
 
             self.add_new_stream()
 
@@ -125,7 +124,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         videoframe._move = self.move_frame
 
         return videoframe
-    
+
     def move_frame(self, frame):
         if self.selected_frame is None:
             self.selected_frame = frame

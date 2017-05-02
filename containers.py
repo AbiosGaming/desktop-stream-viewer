@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
-import copy
 import ctypes
-import callbacks as cb
 from abc import ABC, abstractmethod
 from collections import deque
+
 from streamlink import Streamlink
+
+import callbacks as cb
+
 
 class StreamContainer(ABC):
     """An abstract class representing stream data. This class exposes the
@@ -17,6 +19,7 @@ class StreamContainer(ABC):
     Attributes:
         media (libvlc_media_t*): The media object that vlc uses, includes callbacks.
     """
+
     def __init__(self, vlc_instance):
         # Cast this container to a c pointer to use in the callbacks
         self._opaque = ctypes.cast(ctypes.pointer(
@@ -62,6 +65,7 @@ class StreamContainer(ABC):
         """Close calls all neccesary functions to close down the container."""
         pass
 
+
 class LiveStreamContainer(StreamContainer):
     """This class representas a **live** stream and contains all information
     regarding it's media.
@@ -70,6 +74,7 @@ class LiveStreamContainer(StreamContainer):
     livestream itself, while at the same time caching away previous data in a
     buffer.
     """
+
     def __init__(self, vlc_instance, stream_info, buffer_length=200):
         super().__init__(vlc_instance)
 
@@ -114,7 +119,7 @@ class LiveStreamContainer(StreamContainer):
     @staticmethod
     def filtered_quality_options(streams):
         return [opt for opt in LiveStreamContainer.quality_options(streams)
-            if not opt[0].isalpha()]
+                if not opt[0].isalpha()]
 
     def update_info(self, url, quality):
         """Updates the URL, current quality as well as available qualities of
@@ -133,6 +138,7 @@ class LiveStreamContainer(StreamContainer):
 
         self.quality = quality
 
+
 class RewindedStreamContainer(StreamContainer):
     """This class represents a **rewinded** stream and contains all information
     regarding it's media.
@@ -140,6 +146,7 @@ class RewindedStreamContainer(StreamContainer):
     The RewindedStreamContainer takes another streams buffer, copies that and
     pulls all of it's video data directly from the copied buffer.
     """
+
     def __init__(self, vlc_instance, stream_buffer):
         super().__init__(vlc_instance)
 
@@ -174,7 +181,7 @@ class RewindedStreamContainer(StreamContainer):
     def seek(self, offset):
         """Called by libVLC upon seeking in the media."""
         # Set the current pointer to the correct location
-        self.curr = int((offset/2**62) * self.curr)
+        self.curr = int((offset / 2 ** 62) * self.curr)
         if self.on_seek is not None:
             self.on_seek(offset)
         return 0
@@ -182,4 +189,3 @@ class RewindedStreamContainer(StreamContainer):
     def close(self):
         """Called by libVLC upon closing the media."""
         return 0
-

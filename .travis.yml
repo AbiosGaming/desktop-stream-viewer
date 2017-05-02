@@ -1,5 +1,6 @@
 language: python
 python:
+    - 3.5
     - 3.6
 cache:
     directories:
@@ -8,6 +9,6 @@ cache:
 install:
     - pip3 install pip-accel --cache-dir $HOME/.pip-cache
     - pip-accel install -r test-requirements.txt
-before_script:
+script:
     - bash flake.sh
 sudo: false
