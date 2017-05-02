@@ -17,6 +17,10 @@ class _VideoFrame(QtWidgets.QFrame):
     def __init__(self, vlc_instance):
         super(_VideoFrame, self).__init__()
         self.player = vlc_instance.media_player_new()
+        # Remove input handling from vlc, and give it back
+        self.player.video_set_mouse_input(False)
+        # key also have to be taken back for mouse input
+        self.player.video_set_key_input(False)
 
         # Build the ui for this videoFrame
         self.setup_ui()
@@ -27,9 +31,6 @@ class _VideoFrame(QtWidgets.QFrame):
         uic.loadUi("ui/frame.ui", self)
         # Find the draw area
         self.draw_area = self.findChild(QtCore.QObject, "drawArea")
-        # Connect the playback toggle to the toolbox
-        # TODO: Some other solution
-        self.findChild(QtCore.QObject, "toolButton").clicked.connect(self.toggle_playback)
 
         # Bind the player
         if platform.system() == "Linux":
@@ -65,14 +66,17 @@ class _VideoFrame(QtWidgets.QFrame):
 
         return user_action
 
+    def mouseReleaseEvent(self, event):
+        """Toggles playback of a stream when the mouse is released."""
+        if event.button() == QtCore.Qt.LeftButton:
+            self.toggle_playback()
+
     def context_menu(self, event):
         """Opens a menu upon right clicking the frame."""
         self.context_menu = QtWidgets.QMenu(parent=self)
 
-    def toggle_playback(self, event):
-        """Toggles playback of a stream. How the playback itself is done is
-        handeled by the deriving class.
-        """
+    def toggle_playback(self):
+        """Toggles playback of a stream."""
         if self.player.is_playing():
             self.player.pause()
         else:
