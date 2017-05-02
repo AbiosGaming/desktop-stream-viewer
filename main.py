@@ -120,16 +120,17 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         videoframe = LiveVideoFrame(self.vlc_instance, stream_info)
         self.grid.addWidget(videoframe, coordinates.x, coordinates.y)
         self.videoframes.append(videoframe)
-        videoframe._fullscreen = self.fullscreen
+        videoframe._toggle_fullscreen = self.toggle_fullscreen
 
         return videoframe
 
     def toggle_fullscreen(self, videoframe):
-        for frame in self.videoframes:
-            if frame != videoframe:
+        for frame in [x for x in self.videoframes if x != videoframe]:
+            if videoframe.fullscreen:
+                frame.show()
+            else:
                 frame.hide()
-                frame.toggle_mute()
-        print("changed")
+            frame.toggle_mute()
 
     # TODO:
     # Perhaps update_new_stream_coordinates() is a
