@@ -39,6 +39,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         # List of video frames.
         self.videoframes = []
 
+        # Used when moving two frames
+        self.selected_frame = None
+
     def setup_ui(self):
         """Loads the main.ui file and sets up the window and grid."""
         self.ui = uic.loadUi("ui/main.ui")
@@ -78,7 +81,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         clipboard.clear(mode=clipboard.Clipboard)
         clipboard.setText(text, mode=clipboard.Clipboard)
 
-    def add_new_stream(self, *args, stream_url=None, stream_quality="480p30"):
+    def add_new_stream(self, *args, stream_url=None, stream_quality="best"):
         """Adds a new player for the specified stream in the grid."""
         if not stream_url:
              stream_url, ok = QtWidgets.QInputDialog.getText(self, "Stream input", "Enter the stream URL:")
@@ -119,8 +122,28 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         """Sets ups a videoframe and with the provided stream information."""
         videoframe = LiveVideoFrame(self.vlc_instance, stream_info)
         self.grid.addWidget(videoframe, coordinates.x, coordinates.y)
+        videoframe._move = self.move_frame
 
         return videoframe
+    
+    def move_frame(self, frame):
+        if self.selected_frame is None:
+            self.selected_frame = frame
+        else:
+            if self.selected_frame.selected and self.selected_frame != frame:
+                x, y, _, _ = self.grid.getItemPosition(self.grid.indexOf(frame))
+                x2, y2, _, _ = self.grid.getItemPosition(self.grid.indexOf(self.selected_frame))
+                self.grid.removeWidget(frame)
+                self.grid.removeWidget(self.selected_frame)
+                self.grid.addWidget(self.selected_frame, x, y)
+                self.grid.addWidget(frame, x2, y2)
+
+                # Deselect
+                frame.deselect()
+                self.selected_frame.deselect()
+                self.selected_frame = None
+            else:
+                self.selected_frame = frame
 
     # TODO:
     # Perhaps update_new_stream_coordinates() is a

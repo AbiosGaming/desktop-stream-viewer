@@ -4,7 +4,7 @@ import platform
 import sys
 import time
 
-from PyQt5 import QtWidgets, QtCore, uic
+from PyQt5 import QtWidgets, QtCore, QtGui, uic
 from containers import LiveStreamContainer, RewindedStreamContainer
 from constants import *
 
@@ -26,6 +26,7 @@ class _VideoFrame(QtWidgets.QFrame):
         self.setup_ui()
 
         self.is_muted = False
+        self.selected = False        
 
     def setup_ui(self):
         uic.loadUi("ui/frame.ui", self)
@@ -69,7 +70,10 @@ class _VideoFrame(QtWidgets.QFrame):
     def mouseReleaseEvent(self, event):
         """Toggles playback of a stream when the mouse is released."""
         if event.button() == QtCore.Qt.LeftButton:
-            self.toggle_playback()
+            if event.modifiers() == QtCore.Qt.ControlModifier:
+                self.toggle_select()
+            else:
+                self.toggle_playback()
 
     def context_menu(self, event):
         """Opens a menu upon right clicking the frame."""
@@ -81,6 +85,21 @@ class _VideoFrame(QtWidgets.QFrame):
             self.player.pause()
         else:
             self.player.play()
+
+    def select(self):
+        self.selected = True
+        self.setStyleSheet(FRAME_SELECT_STYLE)
+        self._move(self)
+
+    def deselect(self):
+        self.selected = False
+        self.setStyleSheet("")
+
+    def toggle_select(self):
+        if self.selected:
+            self.deselect()
+        else:
+            self.select()
 
 class LiveVideoFrame(_VideoFrame):
     """A class representing a VideoFrame containing a **live** stream.
