@@ -1,3 +1,5 @@
+# Desktop Stream Viewer: [![Build Status](https://travis-ci.org/kaszim/desktop-stream-viewer.svg?branch=master)](https://travis-ci.org/kaszim/desktop-stream-viewer)
+
 ## Description
 This is a work in progress Qt5 application for playing live video streams
 using Streamlink and libVLC callbacks. It provides complete access to the stream
