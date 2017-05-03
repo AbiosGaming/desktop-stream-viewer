@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import platform
 import sys
+import platform
 
 from PyQt5 import QtWidgets, QtCore, uic
 
@@ -34,7 +34,9 @@ class _VideoFrame(QtWidgets.QFrame):
         uic.loadUi("ui/frame.ui", self)
         # Find the draw area
         self.draw_area = self.findChild(QtCore.QObject, "drawArea")
-
+        # Connect the playback toggle to the toolbox
+        # TODO: Some other solution
+        self.findChild(QtCore.QObject, "toolButton").clicked.connect(self.toggle_playback)
         # Bind the player
         if platform.system() == "Linux":
             self.player.set_xwindow(self.draw_area.winId())
@@ -87,6 +89,12 @@ class _VideoFrame(QtWidgets.QFrame):
             self.player.pause()
         else:
             self.player.play()
+
+    def delete_stream(self):
+        """Deletes videoframe/stream"""
+        self.player.stop()
+        self.player.release()
+        self._delete_stream(self)
 
     def select(self):
         self.selected = True

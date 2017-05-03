@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import sip
 
 import streamlink
 # Qt imports
@@ -24,6 +25,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.vlc_instance = vlc.Instance("--no-xlib")
         self.streamlink_session = streamlink.Streamlink()
 
+        # Coordinates for where next added stream ends up on grid
         self.coordinates = StreamCoordinates(x=0, y=0)
         self.videoframes = []
 
@@ -98,6 +100,40 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
             self.add_new_stream()
 
+    def delete_stream(self, videoframe):
+        """Removes selected stream/videoframe from grid"""
+
+        videoframe.hide()
+
+        # If one or two frames
+        if len(self.videoframes) < 3:
+            # Reset coordinates and delete frame
+            self.coordinates = StreamCoordinates(x=0, y=0)
+            self.delete_videoframe(videoframe)
+            # If one frame left after deletion
+            if len(self.videoframes) == 1:
+                # Set last frame's coordinates to (0,0) and update coordinates
+                last_frame = self.videoframes[0]
+                last_frame._coordinates = self.coordinates
+                self.update_new_stream_coordinates()
+        # Otherwise there are more frames
+        else:
+            # Get coordinates of frame
+            x = videoframe._coordinates.x
+            y = videoframe._coordinates.y
+            self.coordinates = StreamCoordinates(x=x, y=y)
+
+            # Determine which frames need to be moved
+            index = self.videoframes.index(videoframe)
+            frames_to_move = self.videoframes[index + 1:]
+
+            # Delete frame and all its children
+            self.delete_videoframe(videoframe)
+
+            # Move remaining frames
+            for frame in frames_to_move:
+                self.relocate_frame(frame, self.coordinates)
+
     def _get_user_quality_preference(self, stream_options):
         filtered_qualities = LiveStreamContainer.filtered_quality_options(
             stream_options
@@ -115,6 +151,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         """Sets ups a videoframe and with the provided stream information."""
         videoframe = LiveVideoFrame(self.vlc_instance, stream_options, quality)
         self.grid.addWidget(videoframe, coordinates.x, coordinates.y)
+        self.videoframes.append(videoframe)
+        videoframe._delete_stream = self.delete_stream
+        videoframe._coordinates = self.coordinates
         videoframe._move = self.move_frame
 
         return videoframe
@@ -138,13 +177,31 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             else:
                 self.selected_frame = frame
 
-    # TODO:
-    # Perhaps update_new_stream_coordinates() is a
-    # better suited name for the function?
-    def new_coordinates(self):
-        # TODO:
-        # Docstring missing and some explanation on what the code
-        # does is missing.
+    def relocate_frame(self, videoframe, coordinates):
+        """Moves an existing videoframe to the new coordinates."""
+        # Pause stream and remove widget from grid
+        videoframe.player.pause()
+        self.grid.removeWidget(videoframe)
+
+        # Set videoframes coordinates to provided coordinates
+        videoframe._coordinates = coordinates
+
+        # Readd widget to target location and play stream
+        self.grid.addWidget(videoframe, coordinates.x, coordinates.y)
+        videoframe.player.play()
+
+        # Update coordinates for adding next stream
+        self.update_new_stream_coordinates()
+
+    def delete_videoframe(self, videoframe):
+        """Deletes a videoframe and all its children from grid"""
+        self.videoframes.remove(videoframe)
+        self.grid.removeWidget(videoframe)
+        sip.delete(videoframe)
+        videoframe = None
+
+    def update_new_stream_coordinates(self):
+        """Prepares coordinates for next stream"""
         self.coordinates = self.coordinates.new_coordinates()
 
 
