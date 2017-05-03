@@ -3,8 +3,6 @@ import ctypes
 from abc import ABC, abstractmethod
 from collections import deque
 
-from streamlink import Streamlink
-
 import callbacks as cb
 
 
@@ -74,16 +72,14 @@ class LiveStreamContainer(StreamContainer):
     livestream itself, while at the same time caching away previous data in a
     buffer.
     """
-
-    def __init__(self, vlc_instance, stream_info, buffer_length=200):
+    def __init__(self, vlc_instance, streams, quality, buffer_length=200):
         super().__init__(vlc_instance)
 
-        self.session = Streamlink()
-        self.streams = self.session.streams(stream_info["url"])
-        self.stream = self.streams[stream_info["quality"]].open()
+        self.streams = streams
+        self.stream = self.streams[quality].open()
         self.buffer = deque(maxlen=buffer_length)
 
-        self.update_info(stream_info["url"], stream_info["quality"])
+        self.update_info(quality)
 
     def open(self):
         """Called by libVLC upon opening the media. Not currently used."""
@@ -121,11 +117,10 @@ class LiveStreamContainer(StreamContainer):
         return [opt for opt in LiveStreamContainer.quality_options(streams)
                 if not opt[0].isalpha()]
 
-    def update_info(self, url, quality):
-        """Updates the URL, current quality as well as available qualities of
+    def update_info(self, quality):
+        """Updates the current quality as well as available qualities of
         the stream.
         """
-        self.url = url
         self.quality = quality
 
         self.all_qualities = LiveStreamContainer.quality_options(self.streams)
@@ -133,6 +128,7 @@ class LiveStreamContainer(StreamContainer):
 
     def change_stream_quality(self, quality):
         """Changes the streams quality."""
+        self.stream.close()
         self.stream = self.streams[quality].open()
         self.buffer.clear()
 

@@ -109,14 +109,11 @@ class LiveVideoFrame(_VideoFrame):
 
     Args:
         vlc_instance: VLC instance object.
-        stream_info: Dictionary containing the URL ('url') as well as the
-            quality ('quality') of the requested stream.
     """
-
-    def __init__(self, vlc_instance, stream_info):
+    def __init__(self, vlc_instance, stream_options, quality):
         super(LiveVideoFrame, self).__init__(vlc_instance)
         self.vlc_instance = vlc_instance
-        self.stream = LiveStreamContainer(vlc_instance, stream_info)
+        self.stream = LiveStreamContainer(vlc_instance, stream_options, quality)
         self.player.set_media(self.stream.media)
         self.player.play()
 

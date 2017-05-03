@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# Example application for the Abios Gaming - Desktop Stream Viewer.
-# Sven Anderzén - 2017
-
 import sys
 
 import streamlink
@@ -24,18 +21,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         super(ApplicationWindow, self).__init__(None)
         self.setup_ui()
 
-        # Kick up a VLC instance.
         self.vlc_instance = vlc.Instance("--no-xlib")
+        self.streamlink_session = streamlink.Streamlink()
 
-        # TODO:
-        # Maybe we should explain what kind of coordinates these are?
-        # It is probably also a good idea to only have one attribute,
-        # called new_stream_coordinates (or something similar) and let
-        # it be a tuple of x, y.
-        # Set coordinates
         self.coordinates = StreamCoordinates(x=0, y=0)
-
-        # List of video frames.
         self.videoframes = []
 
         # Used when moving two frames
@@ -88,38 +77,43 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             if not ok:
                 return
 
-        new_stream = {"url": stream_url, "quality": stream_quality}
-
         try:
-            self.setup_videoframe(new_stream, self.coordinates)
+            stream_options = self.streamlink_session.streams(stream_url)
+
+            if stream_quality not in stream_options:
+                stream_quality, ok = self._get_user_quality_preference(stream_options)
+
+                if not ok:
+                    return
+
+            self.setup_videoframe(stream_options, stream_quality, self.coordinates)
             self.new_coordinates()
-        except KeyError:
-            filtered_qualities = LiveStreamContainer.filtered_quality_options(
-                streamlink.streams(stream_url)
-            )
 
-            stream_quality, ok = QtWidgets.QInputDialog.getItem(self,
-                                                                "Stream Quality option",
-                                                                """The default stream quality option could not be used.
-                                                                Please select another one:""",
-                                                                reversed(filtered_qualities)
-                                                                )
-
-            if not ok:
-                return
-
-            self.add_new_stream(stream_url=stream_url, stream_quality=stream_quality)
         except streamlink.exceptions.NoPluginError:
-            error_window = QtWidgets.QMessageBox().warning(self,
-                                                           "Error",
-                                                           "Could not open stream: The provided URL is not supported"
-                                                           )
+            error_window = QtWidgets.QMessageBox().warning(
+                self,
+                "Error",
+                "Could not open stream: The provided URL is not supported"
+            )
 
             self.add_new_stream()
 
-    def setup_videoframe(self, stream_info, coordinates):
+    def _get_user_quality_preference(self, stream_options):
+        filtered_qualities = LiveStreamContainer.filtered_quality_options(
+            stream_options
+        )
+
+        return QtWidgets.QInputDialog.getItem(
+            self,
+            "Stream Quality option",
+            """The default stream quality option could not be used.
+            Please select another one:""",
+            reversed(filtered_qualities)
+        )
+
+    def setup_videoframe(self, stream_options, quality, coordinates):
         """Sets ups a videoframe and with the provided stream information."""
-        videoframe = LiveVideoFrame(self.vlc_instance, stream_info)
+        videoframe = LiveVideoFrame(self.vlc_instance, stream_options, quality)
         self.grid.addWidget(videoframe, coordinates.x, coordinates.y)
         videoframe._move = self.move_frame
 
