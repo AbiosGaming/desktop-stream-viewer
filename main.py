@@ -9,10 +9,14 @@ import streamlink
 from PyQt5 import QtWidgets, uic, QtCore
 
 import vlc
-from constants import MUTE_CHECKBOX, MUTE_ALL_STREAMS, EXPORT_STREAMS_TO_CLIPBOARD, ADD_NEW_STREAM
+from constants import (
+    MUTE_CHECKBOX, MUTE_ALL_STREAMS, EXPORT_STREAMS_TO_CLIPBOARD, ADD_NEW_STREAM,
+    CONFIG_QUALITY, CONFIG_MUTE
+)
 from containers import LiveStreamContainer
-from coordinates import StreamCoordinates
 from videoframes import LiveVideoFrame
+from config import cfg
+from coordinates import StreamCoordinates
 
 
 class ApplicationWindow(QtWidgets.QMainWindow):
@@ -71,7 +75,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         clipboard.clear(mode=clipboard.Clipboard)
         clipboard.setText(text, mode=clipboard.Clipboard)
 
-    def add_new_stream(self, *args, stream_url=None, stream_quality="best"):
+    def add_new_stream(self, *args, stream_url=None, stream_quality=cfg[CONFIG_QUALITY]):
         """Adds a new player for the specified stream in the grid."""
         if not stream_url:
             stream_url, ok = QtWidgets.QInputDialog.getText(self, "Stream input", "Enter the stream URL:")
@@ -88,8 +92,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 if not ok:
                     return
 
-            self.setup_videoframe(stream_options, stream_quality, self.coordinates)
+            frame = self.setup_videoframe(stream_options, stream_quality, self.coordinates)
             self.update_new_stream_coordinates()
+            frame.player.audio_set_mute(cfg[CONFIG_MUTE])
 
         except streamlink.exceptions.NoPluginError:
             error_window = QtWidgets.QMessageBox().warning(
