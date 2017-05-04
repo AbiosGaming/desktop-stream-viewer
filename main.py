@@ -89,7 +89,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                     return
 
             self.setup_videoframe(stream_options, stream_quality, self.coordinates)
-            self.new_coordinates()
+            self.update_new_stream_coordinates()
 
         except streamlink.exceptions.NoPluginError:
             error_window = QtWidgets.QMessageBox().warning(
