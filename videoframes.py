@@ -99,7 +99,7 @@ class _VideoFrame(QtWidgets.QFrame):
     def select(self):
         self.selected = True
         self.setStyleSheet(FRAME_SELECT_STYLE)
-        self._move(self)
+        self._swap(self)
 
     def deselect(self):
         self.selected = False

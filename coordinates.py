@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-class StreamCoordinates:
+class VideoFrameCoordinates:
     def __init__(self, x=0, y=0):
         self.__x = x
         self.__y = y
@@ -23,13 +23,13 @@ class StreamCoordinates:
     def y(self, y):
         self.__y = y
 
-    def new_coordinates(self):
+    def update_coordinates(self):
         if self.y == self.x:
-            return StreamCoordinates(x=0, y=self.y + 1)
+            return VideoFrameCoordinates(x=0, y=self.y + 1)
         elif self.y == self.x + 1:
-            return StreamCoordinates(x=self.y, y=0)
+            return VideoFrameCoordinates(x=self.y, y=0)
         else:
             if self.x < self.y:
-                return StreamCoordinates(x=self.x + 1, y=self.y)
+                return VideoFrameCoordinates(x=self.x + 1, y=self.y)
             else:
-                return StreamCoordinates(x=self.x, y=self.y + 1)
+                return VideoFrameCoordinates(x=self.x, y=self.y + 1)

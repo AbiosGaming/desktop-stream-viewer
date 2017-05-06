@@ -442,7 +442,10 @@
    <string notr="true"/>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QGridLayout" name="grid">
+   <layout class="QVBoxLayout" name="container">
+    <property name="spacing">
+     <number>0</number>
+    </property>
     <property name="leftMargin">
      <number>0</number>
     </property>
@@ -453,9 +456,6 @@
      <number>0</number>
     </property>
     <property name="bottomMargin">
-     <number>0</number>
-    </property>
-    <property name="spacing">
      <number>0</number>
     </property>
    </layout>
