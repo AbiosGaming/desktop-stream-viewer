@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import threading
 
 import streamlink
 # Qt imports
-from PyQt5 import QtWidgets, uic, QtCore
+from PyQt5 import QtWidgets, uic, QtCore, QtGui
 
 import vlc
 from constants import (
@@ -15,20 +16,28 @@ from constants import (
 from containers import LiveStreamContainer
 from videoframegrid import VideoFrameGrid
 from config import cfg
+from enums import AddStreamError
+from coordinates import VideoFrameCoordinates
 
 
 class ApplicationWindow(QtWidgets.QMainWindow):
     """The main GUI window."""
 
+    # Define a new signal, used to add_frames from the seperate thread
+    add_frame = QtCore.pyqtSignal(dict, str, VideoFrameCoordinates)
+    # Used when the add stream thread fails
+    fail_add_stream = QtCore.pyqtSignal(AddStreamError, tuple)
+
     def __init__(self):
         super(ApplicationWindow, self).__init__(None)
         self.setup_ui()
 
+        # Connect threading signals
+        self.add_frame.connect(self.setup_videoframe)
+        self.fail_add_stream.connect(self.on_fail_add_stream)
+
         self.vlc_instance = vlc.Instance("--no-xlib")
         self.streamlink_session = streamlink.Streamlink()
-
-        # Used when moving two frames
-        self.selected_frame = None
 
     def setup_ui(self):
         """Loads the main.ui file and sets up the window and grid."""
@@ -48,7 +57,31 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.findChild(QtCore.QObject, ADD_NEW_STREAM) \
             .triggered.connect(self.add_new_stream)
 
+        # Create the loading gear but dont add it to anywhere, just save it
+        self.setup_loading_gif()
+
         self.ui.show()
+
+    def setup_loading_gif(self):
+        """Creates the loading gear as QMovie and its label."""
+        self.movie = QtGui.QMovie(self)
+        self.movie.setFileName("ui/res/loading.gif")
+        self.movie.setCacheMode(QtGui.QMovie.CacheAll)
+        self.movie.start()
+        self.loading = QtWidgets.QLabel(self)
+        self.loading.setAlignment(QtCore.Qt.AlignCenter)
+        self.loading.setMovie(self.movie)
+        self.loading.hide()
+
+    def show_loading_gif(self):
+        """Shows the loading gif on the next frame location"""
+        self.grid.addWidget(self.loading, self.grid.coordinates.x, self.grid.coordinates.y)
+        self.loading.show()
+
+    def hide_loading_gif(self):
+        """Removes the loading gif from the next frame location"""
+        self.grid.removeWidget(self.loading)
+        self.loading.hide()
 
     def mute_all_streams(self):
         """Toggles the audio of all the players."""
@@ -80,25 +113,48 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             if not ok:
                 return
 
+        # Give some feedback to the user
+        self.show_loading_gif()
+
+        # Run the rest on a seperate thread to be able to show the loading feedback
+        # Also helps a lot with lag
+        threading.Thread(target=self._add_new_stream, args=(stream_url, stream_quality)).start()
+
+    def _add_new_stream(self, stream_url=None, stream_quality=cfg[CONFIG_QUALITY]):
+        """Fetches qualities and if possible adds a frame to the main window."""
         try:
             stream_options = self.streamlink_session.streams(stream_url)
 
             if stream_quality not in stream_options:
-                stream_quality, ok = self._get_user_quality_preference(stream_options)
+                self.fail_add_stream.emit(AddStreamError.DEFAULT_QUALITY_MISSING, (stream_options, stream_url, stream_quality))
+                return
 
-                if not ok:
-                    return
-
-            self.setup_videoframe(stream_options, stream_quality)
+            self.add_frame.emit(stream_options, stream_quality, self.grid.coordinates)
 
         except streamlink.exceptions.NoPluginError:
-            error_window = QtWidgets.QMessageBox().warning(
-                self,
-                "Error",
-                "Could not open stream: The provided URL is not supported"
+            self.fail_add_stream.emit(
+                AddStreamError.URL_NOT_SUPPORTED,
+                (
+                    "Error",
+                    "Could not open stream: The provided URL is not supported"
+                )
             )
 
-            self.add_new_stream()
+    def on_fail_add_stream(self, err, args):
+        # Remove the loading feedback
+        self.hide_loading_gif()
+
+        if err == AddStreamError.URL_NOT_SUPPORTED:
+            (title, text) = args
+            QtWidgets.QMessageBox().warning(self, title, text)
+        elif err == AddStreamError.DEFAULT_QUALITY_MISSING:
+            (stream_options, url, quality) = args
+            quality, ok = self._get_user_quality_preference(stream_options)
+            if ok:
+                self.add_new_stream(self, stream_url=url, stream_quality=quality)
+                return
+
+        self.add_new_stream()
 
     def _get_user_quality_preference(self, stream_options):
         filtered_qualities = LiveStreamContainer.filtered_quality_options(
@@ -116,6 +172,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
     def setup_videoframe(self, stream_options, quality):
         """Sets up a videoframe and with the provided stream information."""
         self.grid.add_new_videoframe(self.vlc_instance, stream_options, quality)
+        # Remove the loading feedback
+        self.hide_loading_gif()
 
 
 def main():
