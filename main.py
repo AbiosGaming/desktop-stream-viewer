@@ -36,7 +36,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.add_frame.connect(self.setup_videoframe)
         self.fail_add_stream.connect(self.on_fail_add_stream)
         # Opengl performs better on windows, which is odd
-        self.vlc_instance = vlc.Instance("--no-xlib --vout=opengl --avcodec-hw=any --avcodec-threads=0")
+        self.vlc_instance = vlc.Instance(
+            "--no-xlib " +         # Turn off XInitThreads()
+            "--vout=opengl " +     # Force OpenGL as vout module for better performance on windows
+            "--avcodec-threads=0"  # Number of threads used for decoding, 0 meaning auto
+        )
         self.streamlink_session = streamlink.Streamlink()
 
     def setup_ui(self):
