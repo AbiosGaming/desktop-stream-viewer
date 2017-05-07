@@ -3,9 +3,9 @@
 """Signals and constants used in the application."""
 
 MUTE_CHECKBOX = 'mute_checkbox'
-MUTE_ALL_STREAMS = 'mute_all_streams'
-ADD_NEW_STREAM = 'add_new_stream'
-EXPORT_STREAMS_TO_CLIPBOARD = 'export_streams_to_clipboard'
+MUTE_ALL_STREAMS = 'MuteAllStreams'
+ADD_NEW_STREAM = 'AddNewStream'
+EXPORT_STREAMS_TO_CLIPBOARD = 'ExportStreamsToClipboard'
 CONFIG_FILE = 'config.json'
 CONFIG_MUTE = 'mute'
 CONFIG_QUALITY = 'quality'

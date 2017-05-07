@@ -460,7 +460,7 @@
     </property>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menuBar">
+  <widget class="QMenuBar" name="MenuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
@@ -927,21 +927,21 @@
     <property name="title">
      <string>Menu</string>
     </property>
-    <addaction name="mute_all_streams"/>
-    <addaction name="reopen_stream"/>
-    <addaction name="export_streams_to_clipboard"/>
-    <addaction name="import_streams_from_clipboard"/>
+    <addaction name="MuteAllStreams"/>
+    <addaction name="ReopenStream"/>
+    <addaction name="ExportStreamsToClipboard"/>
+    <addaction name="ImportStreamsFromClipboard"/>
    </widget>
-   <widget class="QMenu" name="add_stream">
+   <widget class="QMenu" name="AddStream">
     <property name="title">
      <string>Add stream</string>
     </property>
-    <addaction name="add_new_stream"/>
+    <addaction name="AddNewStream"/>
    </widget>
    <addaction name="open"/>
-   <addaction name="add_stream"/>
+   <addaction name="AddStream"/>
   </widget>
-  <action name="add_new_stream">
+  <action name="AddNewStream">
    <property name="text">
     <string>Open new stream</string>
    </property>
@@ -949,7 +949,7 @@
     <string>Ctrl+O</string>
    </property>
   </action>
-  <action name="export_streams_to_clipboard">
+  <action name="ExportStreamsToClipboard">
    <property name="text">
     <string>Export Session</string>
    </property>
@@ -957,7 +957,7 @@
     <string>Ctrl+E</string>
    </property>
   </action>
-  <action name="keyboard_shortcuts">
+  <action name="KeyboardShortcuts">
    <property name="text">
     <string>Keyboard shortcuts</string>
    </property>
@@ -965,7 +965,7 @@
     <string>Ctrl+K</string>
    </property>
   </action>
-  <action name="mute_all_streams">
+  <action name="MuteAllStreams">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -979,7 +979,7 @@
     <string>Ctrl+M</string>
    </property>
   </action>
-  <action name="add_new_stream_2">
+  <action name="AddNewStream_2">
    <property name="text">
     <string>Open new stream</string>
    </property>
@@ -987,7 +987,7 @@
     <string>Ctrl+O</string>
    </property>
   </action>
-  <action name="mute_all_streams">
+  <action name="MuteAllStreamss">
    <property name="text">
     <string>Global Mute</string>
    </property>
@@ -995,12 +995,12 @@
     <string>Ctrl+M</string>
    </property>
   </action>
-  <action name="import_streams_from_clipboard">
+  <action name="ImportStreamsFromClipboard">
    <property name="text">
     <string>Import Session</string>
    </property>
   </action>
-  <action name="reopen_stream">
+  <action name="ReopenStream">
    <property name="text">
     <string>Reopen Stream</string>
    </property>

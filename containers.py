@@ -72,14 +72,14 @@ class LiveStreamContainer(StreamContainer):
     livestream itself, while at the same time caching away previous data in a
     buffer.
     """
-    def __init__(self, vlc_instance, streams, quality, buffer_length=200):
+    def __init__(self, vlc_instance, url, streams, quality, buffer_length=200):
         super().__init__(vlc_instance)
 
         self.streams = streams
         self.stream = self.streams[quality].open()
         self.buffer = deque(maxlen=buffer_length)
 
-        self.update_info(quality)
+        self.update_info(url, quality)
 
     def open(self):
         """Called by libVLC upon opening the media. Not currently used."""
@@ -117,10 +117,11 @@ class LiveStreamContainer(StreamContainer):
         return [opt for opt in LiveStreamContainer.quality_options(streams)
                 if not opt[0].isalpha()]
 
-    def update_info(self, quality):
+    def update_info(self, url, quality):
         """Updates the current quality as well as available qualities of
         the stream.
         """
+        self.url = url
         self.quality = quality
 
         self.all_qualities = LiveStreamContainer.quality_options(self.streams)

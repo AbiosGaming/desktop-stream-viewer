@@ -17,7 +17,7 @@ class VideoFrameGrid(QtWidgets.QGridLayout):
     after a toggled fullscreen mode.
     """
 
-    def __init__(self):
+    def __init__(self, parent):
         """Creates a new VideoFrameGrid.
 
         The VidoeFrameGrid holds a list of the active videoframe objects as
@@ -25,9 +25,11 @@ class VideoFrameGrid(QtWidgets.QGridLayout):
         coordinates (beginning at (0, 0)).
         """
         super(VideoFrameGrid, self).__init__()
+        self.parent = parent
         self.videoframes = []
         self.coordinates = VideoFrameCoordinates(x=0, y=0)
         self.selected_frame = None
+        self.fullscreen = False
 
     def _add_videoframe(self, videoframe):
         """Adds the provided videoframeobject to the VideoFrameGrid."""
@@ -35,15 +37,16 @@ class VideoFrameGrid(QtWidgets.QGridLayout):
         self.addWidget(videoframe, self.coordinates.x, self.coordinates.y)
         self.coordinates = self.coordinates.update_coordinates()
 
-    def _create_videoframe(self, vlc_instance, stream_options, quality):
+    def _create_videoframe(self, vlc_instance, stream_url, stream_options, quality):
         """Creates a new LiveVideoFrame object."""
-        return LiveVideoFrame(vlc_instance, stream_options, quality)
+        return LiveVideoFrame(vlc_instance, stream_url, stream_options, quality)
 
-    def add_new_videoframe(self, vlc_instance, stream_options, quality):
+    def add_new_videoframe(self, vlc_instance, stream_url, stream_options, quality):
         """Creates and adds a new LiveVideoFrame to the VideoFrameGrid."""
-        videoframe = self._create_videoframe(vlc_instance, stream_options, quality)
+        videoframe = self._create_videoframe(vlc_instance, stream_url, stream_options, quality)
         videoframe.player.audio_set_mute(cfg[CONFIG_MUTE])
         videoframe._swap = self.swap_frame
+        videoframe._fullscreen = self.toggle_fullscreen
         videoframe._coordinates = self.coordinates
         videoframe._delete_stream = self.delete_stream
         self._add_videoframe(videoframe)
@@ -67,6 +70,28 @@ class VideoFrameGrid(QtWidgets.QGridLayout):
                 self.selected_frame = None
             else:
                 self.selected_frame = frame
+
+    def toggle_fullscreen(self, selected_frame):
+        if not self.fullscreen:
+            for videoframe in self.videoframes:
+                if videoframe != selected_frame:
+                    videoframe.hide()
+                    videoframe.player.audio_set_mute(True)
+
+            self.parent.menubar.hide()
+            self.window_state = self.parent.windowState()
+            self.parent.showFullScreen()
+            self.fullscreen = True
+
+        else:
+            for videoframe in self.videoframes:
+                if videoframe != selected_frame:
+                    videoframe.show()
+                    videoframe.player.audio_set_mute(False)
+
+            self.parent.menubar.show()
+            self.parent.setWindowState(self.window_state)
+            self.fullscreen = False
 
     def delete_stream(self, videoframe):
         """Removes selected stream/videoframe from grid"""

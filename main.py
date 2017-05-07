@@ -13,8 +13,8 @@ from constants import (
     MUTE_CHECKBOX, MUTE_ALL_STREAMS, EXPORT_STREAMS_TO_CLIPBOARD, ADD_NEW_STREAM,
     CONFIG_QUALITY
 )
-from containers import LiveStreamContainer
 from videoframegrid import VideoFrameGrid
+from containers import LiveStreamContainer
 from config import cfg
 from enums import AddStreamError
 from coordinates import VideoFrameCoordinates
@@ -24,7 +24,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
     """The main GUI window."""
 
     # Define a new signal, used to add_frames from the seperate thread
-    add_frame = QtCore.pyqtSignal(dict, str, VideoFrameCoordinates)
+    add_frame = QtCore.pyqtSignal(str, dict, str, VideoFrameCoordinates)
     # Used when the add stream thread fails
     fail_add_stream = QtCore.pyqtSignal(AddStreamError, tuple)
 
@@ -41,11 +41,12 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
     def setup_ui(self):
         """Loads the main.ui file and sets up the window and grid."""
-        self.ui = uic.loadUi("ui/main.ui")
-        self.grid = VideoFrameGrid()
+        self.ui = uic.loadUi("ui/main.ui", self)
+        self.grid = VideoFrameGrid(self)
 
         self.container = self.ui.findChild(QtCore.QObject, "container")
         self.container.addLayout(self.grid)
+        self.menubar = self.ui.findChild(QtCore.QObject, "MenuBar")
 
         # Connect up all actions.
         self.actions = {}
@@ -61,6 +62,12 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.setup_loading_gif()
 
         self.ui.show()
+
+    def setup_videoframe(self, stream_url, stream_options, quality):
+        """Sets up a videoframe and with the provided stream information."""
+        self.grid.add_new_videoframe(self.vlc_instance, stream_url, stream_options, quality)
+        # Remove the loading feedback
+        self.hide_loading_gif()
 
     def setup_loading_gif(self):
         """Creates the loading gear as QMovie and its label."""
@@ -105,10 +112,14 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         clipboard.clear(mode=clipboard.Clipboard)
         clipboard.setText(text, mode=clipboard.Clipboard)
 
-    def add_new_stream(self, *args, stream_url=None, stream_quality=cfg[CONFIG_QUALITY]):
+    def add_new_stream(self, stream_url=None, stream_quality=cfg[CONFIG_QUALITY]):
         """Adds a new player for the specified stream in the grid."""
         if not stream_url:
-            stream_url, ok = QtWidgets.QInputDialog.getText(self, "Stream input", "Enter the stream URL:")
+            stream_url, ok = QtWidgets.QInputDialog.getText(
+                self,
+                "Stream input",
+                "Enter the stream URL:"
+            )
 
             if not ok:
                 return
@@ -129,7 +140,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 self.fail_add_stream.emit(AddStreamError.DEFAULT_QUALITY_MISSING, (stream_options, stream_url, stream_quality))
                 return
 
-            self.add_frame.emit(stream_options, stream_quality, self.grid.coordinates)
+            self.add_frame.emit(stream_url, stream_options, stream_quality, self.grid.coordinates)
 
         except streamlink.exceptions.NoPluginError:
             self.fail_add_stream.emit(
@@ -157,6 +168,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.add_new_stream()
 
     def _get_user_quality_preference(self, stream_options):
+        """Prompts the user to select what quality they want on the stream."""
         filtered_qualities = LiveStreamContainer.filtered_quality_options(
             stream_options
         )
@@ -168,12 +180,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             Please select another one:""",
             reversed(filtered_qualities)
         )
-
-    def setup_videoframe(self, stream_options, quality):
-        """Sets up a videoframe and with the provided stream information."""
-        self.grid.add_new_videoframe(self.vlc_instance, stream_options, quality)
-        # Remove the loading feedback
-        self.hide_loading_gif()
 
 
 def main():

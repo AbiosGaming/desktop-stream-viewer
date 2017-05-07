@@ -79,6 +79,11 @@ class _VideoFrame(QtWidgets.QFrame):
             else:
                 self.toggle_playback()
 
+    def mouseDoubleClickEvent(self, event):
+        """Toggles fullscreen mode on the current stream."""
+        if event.modifiers() != QtCore.Qt.ControlModifier:
+            self._fullscreen(self)
+
     def context_menu(self, event):
         """Opens a menu upon right clicking the frame."""
         self.context_menu = QtWidgets.QMenu(parent=self)
@@ -118,10 +123,10 @@ class LiveVideoFrame(_VideoFrame):
     Args:
         vlc_instance: VLC instance object.
     """
-    def __init__(self, vlc_instance, stream_options, quality):
+    def __init__(self, vlc_instance, stream_url, stream_options, quality):
         super(LiveVideoFrame, self).__init__(vlc_instance)
         self.vlc_instance = vlc_instance
-        self.stream = LiveStreamContainer(vlc_instance, stream_options, quality)
+        self.stream = LiveStreamContainer(vlc_instance, stream_url, stream_options, quality)
         self.player.set_media(self.stream.media)
         self.player.play()
 
