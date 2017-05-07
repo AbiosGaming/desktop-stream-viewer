@@ -16,8 +16,8 @@ class _VideoFrame(QtWidgets.QFrame):
         vlc_instance: VLC instance object.
     """
 
-    def __init__(self, vlc_instance):
-        super(_VideoFrame, self).__init__()
+    def __init__(self, parent, vlc_instance):
+        super(_VideoFrame, self).__init__(parent)
         self.player = vlc_instance.media_player_new()
         # Remove input handling from vlc, and give it back
         self.player.video_set_mouse_input(False)
@@ -123,8 +123,8 @@ class LiveVideoFrame(_VideoFrame):
     Args:
         vlc_instance: VLC instance object.
     """
-    def __init__(self, vlc_instance, stream_url, stream_options, quality):
-        super(LiveVideoFrame, self).__init__(vlc_instance)
+    def __init__(self, parent, vlc_instance, stream_url, stream_options, quality):
+        super(LiveVideoFrame, self).__init__(parent, vlc_instance)
         self.vlc_instance = vlc_instance
         self.stream = LiveStreamContainer(vlc_instance, stream_url, stream_options, quality)
         self.player.set_media(self.stream.media)
@@ -183,7 +183,7 @@ class LiveVideoFrame(_VideoFrame):
 
     def rewind(self):
         if self.rewinded is None:
-            self.rewinded = RewindedVideoFrame(self.vlc_instance, self.stream.buffer, self)
+            self.rewinded = RewindedVideoFrame(self, self.vlc_instance, self.stream.buffer)
             self.rewinded.show()
 
 
@@ -196,9 +196,9 @@ class RewindedVideoFrame(_VideoFrame):
             played from.
     """
 
-    def __init__(self, vlc_instance, stream_buffer, parent):
-        super(RewindedVideoFrame, self).__init__(vlc_instance)
-        # Set the parent
+    def __init__(self, parent, vlc_instance, stream_buffer):
+        super(RewindedVideoFrame, self).__init__(parent, vlc_instance)
+        # Set the parent videoframe
         self.parent = parent
 
         self.stream = RewindedStreamContainer(vlc_instance, stream_buffer)

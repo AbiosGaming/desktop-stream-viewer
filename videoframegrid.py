@@ -39,7 +39,7 @@ class VideoFrameGrid(QtWidgets.QGridLayout):
 
     def _create_videoframe(self, vlc_instance, stream_url, stream_options, quality):
         """Creates a new LiveVideoFrame object."""
-        return LiveVideoFrame(vlc_instance, stream_url, stream_options, quality)
+        return LiveVideoFrame(self.parent, vlc_instance, stream_url, stream_options, quality)
 
     def add_new_videoframe(self, vlc_instance, stream_url, stream_options, quality):
         """Creates and adds a new LiveVideoFrame to the VideoFrameGrid."""
