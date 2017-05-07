@@ -197,7 +197,7 @@ class RewindedVideoFrame(_VideoFrame):
     """
 
     def __init__(self, parent, vlc_instance, stream_buffer):
-        super(RewindedVideoFrame, self).__init__(parent, vlc_instance)
+        super(RewindedVideoFrame, self).__init__(None, vlc_instance)
         # Set the parent videoframe
         self.parent = parent
 
