@@ -151,6 +151,46 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 )
             )
 
+        except streamlink.exceptions.PluginError:
+            self.fail_add_stream.emit(
+                AddStreamError.OTHER,
+                (
+                    "Error",
+                    # Wierd formatting because whitespaces are also included
+                    """Could not open stream!
+The provided URL is supported, but could not be opened.
+Check for spelling mistakes!"""
+                )
+            )
+
+        except streamlink.exceptions.NoStreamsError:
+            self.fail_add_stream.emit(
+                AddStreamError.OTHER,
+                (
+                    "Error",
+                    """Could not open stream: No streams was found.
+Is the stream running?"""
+                )
+            )
+
+        except streamlink.exceptions.StreamError:
+            self.fail_add_stream.emit(
+                AddStreamError.OTHER,
+                (
+                    "Error",
+                    "Could not open stream."
+                )
+            )
+
+        except streamlink.exceptions.StreamlinkError:
+            self.fail_add_stream.emit(
+                AddStreamError.OTHER,
+                (
+                    "Error",
+                    "Could not open stream."
+                )
+            )
+
     def on_fail_add_stream(self, err, args):
         # Remove the loading feedback
         self.hide_loading_gif()
@@ -162,8 +202,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             (stream_options, url, quality) = args
             quality, ok = self._get_user_quality_preference(stream_options)
             if ok:
-                self.add_new_stream(self, stream_url=url, stream_quality=quality)
+                self.add_new_stream(url, quality)
                 return
+        else:
+            (title, text) = args
+            QtWidgets.QMessageBox().warning(self, title, text)
 
         self.add_new_stream()
 
