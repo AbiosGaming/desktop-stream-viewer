@@ -162,6 +162,7 @@ class LiveVideoFrame(_VideoFrame):
 
         self.context_menu.addMenu(quality_submenu)
         self.rewind_action = self.context_menu.addAction("Rewind")
+        self.delete_action = self.context_menu.addAction("Delete")
 
     def check_actions(self, event):
         user_action = super(LiveVideoFrame, self).check_actions(event)
@@ -173,6 +174,9 @@ class LiveVideoFrame(_VideoFrame):
 
         if user_action == self.rewind_action:
             self.rewind()
+        
+        if user_action == self.delete_action:
+            
 
     def contextMenuEvent(self, event):
         super(LiveVideoFrame, self).context_menu(event)
