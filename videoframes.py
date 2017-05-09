@@ -161,6 +161,7 @@ class LiveVideoFrame(_VideoFrame):
             self.quality_actions.append(action)
 
         self.context_menu.addMenu(quality_submenu)
+        self.rewind_action = self.context_menu.addAction("Rewind")
 
     def check_actions(self, event):
         user_action = super(LiveVideoFrame, self).check_actions(event)
@@ -169,6 +170,9 @@ class LiveVideoFrame(_VideoFrame):
             quality = quality_action.text()
             if user_action == quality_action and quality != self.stream.quality:
                 self.change_stream_quality(quality)
+
+        if user_action == self.rewind_action:
+            self.rewind()
 
     def contextMenuEvent(self, event):
         super(LiveVideoFrame, self).context_menu(event)
