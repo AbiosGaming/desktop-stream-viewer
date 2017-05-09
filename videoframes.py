@@ -171,9 +171,9 @@ class LiveVideoFrame(_VideoFrame):
 
         if user_action == self.rewind_action:
             self.rewind()
-        
+
         if user_action == self.delete_action:
-            
+            self.delete_stream()
 
     def contextMenuEvent(self, event):
         super(LiveVideoFrame, self).context_menu(event)
