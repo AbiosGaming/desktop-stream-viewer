@@ -211,6 +211,8 @@ class RewindedVideoFrame(_VideoFrame):
         self.player.set_media(self.stream.media)
         self.player.play()
 
+        self._is_fullscreen = False
+
     def setup_ui(self):
         super(RewindedVideoFrame, self).setup_ui()
         # Find the slider
@@ -222,6 +224,15 @@ class RewindedVideoFrame(_VideoFrame):
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.update_slider_value)
         self.timer.start(1)
+
+    def _fullscreen(self, *args):
+        if self._is_fullscreen:
+            self.setWindowState(self.window_state)
+            self._is_fullscreen = False
+        else:
+            self.window_state = self.windowState()
+            self.showFullScreen()
+            self._is_fullscreen = True
 
     def closeEvent(self, event):
         """Called whenever the window is closed
