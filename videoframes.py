@@ -36,7 +36,6 @@ class _VideoFrame(QtWidgets.QFrame):
         self.draw_area = self.findChild(QtCore.QObject, "drawArea")
         # Connect the playback toggle to the toolbox
         # TODO: Some other solution
-        self.findChild(QtCore.QObject, "toolButton").clicked.connect(self.toggle_playback)
         # Bind the player
         if platform.system() == "Linux":
             self.player.set_xwindow(self.draw_area.winId())
@@ -140,8 +139,6 @@ class LiveVideoFrame(_VideoFrame):
         # TODO: Perhaps it should not even be created?
         # is there a huge overhead for QtWidgets?
         self.findChild(QtCore.QObject, "seek_slider").hide()
-        # Connect the rewind button
-        self.findChild(QtCore.QObject, "rewind_button").clicked.connect(self.rewind)
 
     def setup_actions(self):
         super(LiveVideoFrame, self).setup_actions()
@@ -222,8 +219,6 @@ class RewindedVideoFrame(_VideoFrame):
         self.slider.pressed = False
         self.slider.sliderReleased.connect(self.scrub)
         self.slider.sliderPressed.connect(self.slider_pressed)
-        # Hide the rewind button:
-        self.findChild(QtCore.QObject, "rewind_button").hide()
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.update_slider_value)
         self.timer.start(1)
