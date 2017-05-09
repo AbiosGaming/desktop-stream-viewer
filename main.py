@@ -37,7 +37,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.fail_add_stream.connect(self.on_fail_add_stream)
 
         self.vlc_instance = vlc.Instance("--no-xlib")
-        self.streamlink_session = streamlink.Streamlink()
+
+        try: 
+            self.streamlink_session = streamlink.Streamlink()
+        except Exception:
+            sys.exit("Could not establish connection. Are you connected?")
 
     def setup_ui(self):
         """Loads the main.ui file and sets up the window and grid."""
