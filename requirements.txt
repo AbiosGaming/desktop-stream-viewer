@@ -1,2 +1,3 @@
-streamlink == 0.4.0
-pyqt5      == 5.8.1.1
+streamlink  == 0.4.0
+python-vlc  == 1.1.2
+pyqt5       == 5.8.1.1
