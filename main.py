@@ -3,12 +3,12 @@
 
 import sys
 import threading
+import textwrap
 
 import streamlink
 # Qt imports
 from PyQt5 import QtWidgets, uic, QtCore, QtGui
 
-import vlc
 from constants import (
     MUTE_CHECKBOX, MUTE_ALL_STREAMS, EXPORT_STREAMS_TO_CLIPBOARD, ADD_NEW_STREAM,
     CONFIG_QUALITY
@@ -232,4 +232,14 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        import vlc
+        main()
+    except Exception:
+        sys.exit(textwrap.dedent(
+            """
+            Could not start app, are you sure you fullfill the requirements?
+              - Qt5
+              - VLC 3.0
+            """
+        ))

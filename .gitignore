@@ -21,3 +21,6 @@ ENV/
 
 # Default config being created by the program
 config.json
+
+# Buildfiles
+build/
