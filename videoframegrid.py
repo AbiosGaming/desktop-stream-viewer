@@ -37,13 +37,13 @@ class VideoFrameGrid(QtWidgets.QGridLayout):
         self.addWidget(videoframe, self.coordinates.x, self.coordinates.y)
         self.coordinates = self.coordinates.update_coordinates()
 
-    def _create_videoframe(self, vlc_instance, stream_url, stream_options, quality):
+    def _create_videoframe(self, stream_url, stream_options, quality):
         """Creates a new LiveVideoFrame object."""
-        return LiveVideoFrame(vlc_instance, stream_url, stream_options, quality)
+        return LiveVideoFrame(self.parent, stream_url, stream_options, quality)
 
-    def add_new_videoframe(self, vlc_instance, stream_url, stream_options, quality):
+    def add_new_videoframe(self, stream_url, stream_options, quality):
         """Creates and adds a new LiveVideoFrame to the VideoFrameGrid."""
-        videoframe = self._create_videoframe(vlc_instance, stream_url, stream_options, quality)
+        videoframe = self._create_videoframe(stream_url, stream_options, quality)
         videoframe.player.audio_set_mute(cfg[CONFIG_MUTE])
         videoframe._swap = self.swap_frame
         videoframe._fullscreen = self.toggle_fullscreen

@@ -2,6 +2,7 @@
 
 import sys
 import platform
+import vlc
 
 from PyQt5 import QtWidgets, QtCore, uic
 
@@ -16,9 +17,15 @@ class _VideoFrame(QtWidgets.QFrame):
         vlc_instance: VLC instance object.
     """
 
-    def __init__(self, vlc_instance):
-        super(_VideoFrame, self).__init__()
-        self.player = vlc_instance.media_player_new()
+    def __init__(self, parent):
+        super(_VideoFrame, self).__init__(parent)
+        # Opengl performs better on windows, which is odd
+        self.vlc_instance = vlc.Instance(
+            "--no-xlib " +         # Turn off XInitThreads()
+            "--vout=opengl " +     # Force OpenGL as vout module for better performance on windows
+            "--avcodec-threads=0"  # Number of threads used for decoding, 0 meaning auto
+        )
+        self.player = self.vlc_instance.media_player_new()
         # Remove input handling from vlc, and give it back
         self.player.video_set_mouse_input(False)
         # key also have to be taken back for mouse input
@@ -123,10 +130,9 @@ class LiveVideoFrame(_VideoFrame):
     Args:
         vlc_instance: VLC instance object.
     """
-    def __init__(self, vlc_instance, stream_url, stream_options, quality):
-        super(LiveVideoFrame, self).__init__(vlc_instance)
-        self.vlc_instance = vlc_instance
-        self.stream = LiveStreamContainer(vlc_instance, stream_url, stream_options, quality)
+    def __init__(self, parent, stream_url, stream_options, quality):
+        super(LiveVideoFrame, self).__init__(parent)
+        self.stream = LiveStreamContainer(self.vlc_instance, stream_url, stream_options, quality)
         self.player.set_media(self.stream.media)
         self.player.play()
 
@@ -183,8 +189,23 @@ class LiveVideoFrame(_VideoFrame):
 
     def rewind(self):
         if self.rewinded is None:
-            self.rewinded = RewindedVideoFrame(self.vlc_instance, self.stream.buffer, self)
+            self.rewinded = QtWidgets.QMainWindow(parent=self)
+            self.rewinded.setWindowTitle("Rewinded Stream")
+            self.rewinded.frame = RewindedVideoFrame(self.rewinded, self.stream.buffer)
+            self.rewinded.closeEvent = self.close_rewinded
+            self.rewinded.setCentralWidget(self.rewinded.frame)
             self.rewinded.show()
+
+    def close_rewinded(self, event):
+        """Called whenever the rewinded window is closed"""
+        # First stop and release the media player
+        self.rewinded.frame.player.stop()
+        self.rewinded.frame.player.release()
+        # Stop the timer
+        self.rewinded.frame.timer.stop()
+        # To remove the rewinded video window;
+        # Let the garbage collector do its magic
+        self.rewinded = None
 
 
 class RewindedVideoFrame(_VideoFrame):
@@ -196,12 +217,9 @@ class RewindedVideoFrame(_VideoFrame):
             played from.
     """
 
-    def __init__(self, vlc_instance, stream_buffer, parent):
-        super(RewindedVideoFrame, self).__init__(vlc_instance)
-        # Set the parent
-        self.parent = parent
-
-        self.stream = RewindedStreamContainer(vlc_instance, stream_buffer)
+    def __init__(self, parent, stream_buffer):
+        super(RewindedVideoFrame, self).__init__(parent)
+        self.stream = RewindedStreamContainer(self.vlc_instance, stream_buffer)
         self.stream.on_seek = self.on_seek
         self.player.set_media(self.stream.media)
         self.player.play()
@@ -219,18 +237,6 @@ class RewindedVideoFrame(_VideoFrame):
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.update_slider_value)
         self.timer.start(1)
-
-    def closeEvent(self, event):
-        """Called whenever the window is closed
-        """
-        # First stop and release the media player
-        self.player.stop()
-        self.player.release()
-        # Stop the timer
-        self.timer.stop()
-        # To remove the rewinded video window;
-        # Let the garbage collector do its magic
-        self.parent.rewinded = None
 
     def on_seek(self, offset):
         """Called when the underlying media_player is trying to seek

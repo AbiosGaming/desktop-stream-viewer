@@ -36,7 +36,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.add_frame.connect(self.setup_videoframe)
         self.fail_add_stream.connect(self.on_fail_add_stream)
 
-        self.vlc_instance = vlc.Instance("--no-xlib")
         self.streamlink_session = streamlink.Streamlink()
 
     def setup_ui(self):
@@ -65,7 +64,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
     def setup_videoframe(self, stream_url, stream_options, quality):
         """Sets up a videoframe and with the provided stream information."""
-        self.grid.add_new_videoframe(self.vlc_instance, stream_url, stream_options, quality)
+        self.grid.add_new_videoframe(stream_url, stream_options, quality)
         # Remove the loading feedback
         self.hide_loading_gif()
 
@@ -233,7 +232,6 @@ def main():
 
 if __name__ == "__main__":
     try:
-        import vlc
         main()
     except Exception:
         sys.exit(textwrap.dedent(
