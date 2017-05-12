@@ -10,8 +10,8 @@ import streamlink
 from PyQt5 import QtWidgets, uic, QtCore, QtGui
 
 from constants import (
-    MUTE_CHECKBOX, MUTE_ALL_STREAMS, EXPORT_STREAMS_TO_CLIPBOARD, ADD_NEW_STREAM,
-    CONFIG_QUALITY
+    MUTE_CHECKBOX, MUTE_ALL_STREAMS, EXPORT_STREAMS_TO_CLIPBOARD,
+    IMPORT_STREAMS_FROM_CLIPBOARD, ADD_NEW_STREAM, CONFIG_QUALITY,
 )
 from videoframegrid import VideoFrameGrid
 from containers import LiveStreamContainer
@@ -56,6 +56,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             .triggered.connect(self.export_streams_to_clipboard)
         self.ui.findChild(QtCore.QObject, ADD_NEW_STREAM) \
             .triggered.connect(self.add_new_stream)
+        self.ui.findChild(QtCore.QObject, IMPORT_STREAMS_FROM_CLIPBOARD) \
+            .triggered.connect(self.import_streams_from_clipboard)
 
         # Create the loading gear but dont add it to anywhere, just save it
         self.setup_loading_gif()
@@ -111,7 +113,14 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         clipboard.clear(mode=clipboard.Clipboard)
         clipboard.setText(text, mode=clipboard.Clipboard)
 
-    def add_new_stream(self, stream_url=None, stream_quality=cfg[CONFIG_QUALITY]):
+    def import_streams_from_clipboard(self):
+        """Imports all streams from the users clipboard."""
+        streams = QtWidgets.QApplication.clipboard().text().split()
+
+        for stream in streams:
+            self.add_new_stream(stream)
+
+    def add_new_stream(self, *args, stream_url=None, stream_quality=cfg[CONFIG_QUALITY]):
         """Adds a new player for the specified stream in the grid."""
         if not stream_url:
             stream_url, ok = QtWidgets.QInputDialog.getText(
