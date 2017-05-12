@@ -61,7 +61,9 @@ class VideoFrameGrid(QtWidgets.QGridLayout):
                 x2, y2, _, _ = self.getItemPosition(self.indexOf(self.selected_frame))
                 self.removeWidget(frame)
                 self.removeWidget(self.selected_frame)
+                self.selected_frame._coordinates = VideoFrameCoordinates(x=x, y=y)
                 self.addWidget(self.selected_frame, x, y)
+                frame._coordinates = VideoFrameCoordinates(x=x2, y=y2)
                 self.addWidget(frame, x2, y2)
 
                 # Deselect
