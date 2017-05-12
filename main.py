@@ -135,6 +135,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         try:
             stream_options = self.streamlink_session.streams(stream_url)
 
+            # If the stream is not currently broadcasting, 'stream_options'
+            # will be an empty list.
+            if not stream_options:
+                raise streamlink.exceptions.NoStreamsError(stream_url)
+
             if stream_quality not in stream_options:
                 self.fail_add_stream.emit(AddStreamError.DEFAULT_QUALITY_MISSING, (stream_options, stream_url, stream_quality))
                 return
