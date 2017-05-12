@@ -155,10 +155,13 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 AddStreamError.OTHER,
                 (
                     "Error",
-                    # Wierd formatting because whitespaces are also included
-                    """Could not open stream!
-The provided URL is supported, but could not be opened.
-Check for spelling mistakes!"""
+                    textwrap.dedent(
+                        """
+                        Could not open stream!
+                        The provided URL is supported, but could not be opened.
+                        Check for spelling mistakes!
+                        """
+                    )
                 )
             )
 
@@ -167,8 +170,12 @@ Check for spelling mistakes!"""
                 AddStreamError.OTHER,
                 (
                     "Error",
-                    """Could not open stream: No streams was found.
-Is the stream running?"""
+                    textwrap.dedent(
+                        """
+                        Could not open stream: No streams was found.
+                        Is the stream running?
+                        """
+                    )
                 )
             )
 
@@ -218,8 +225,12 @@ Is the stream running?"""
         return QtWidgets.QInputDialog.getItem(
             self,
             "Stream Quality option",
-            """The default stream quality option could not be used.
-            Please select another one:""",
+            textwrap.dedent(
+                """
+                The default stream quality option could not be used.
+                Please select another one:
+                """
+            ),
             reversed(filtered_qualities)
         )
 
