@@ -49,8 +49,10 @@ class _VideoFrame(QtWidgets.QFrame):
             self.player.set_xwindow(self.draw_area.winId())
         elif platform.system() == "Windows":
             self.player.set_hwnd(self.draw_area.winId())
+        elif platform.system() == "Darwin":
+            self.player.set_nsobject(int(self.draw_area.winId()))
         else:
-            sys.exit("Platform unsupported.")
+            sys.exit("Platform unsupported")
 
     def setup_actions(self):
         """Sets up the actions in the context menu provided."""
