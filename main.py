@@ -115,10 +115,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
     def import_streams_from_clipboard(self):
         """Imports all streams from the users clipboard."""
-        streams = QtWidgets.QApplication.clipboard().text().split()
+        streams = QtWidgets.QApplication.clipboard().text().rsplit("\n")
 
         for stream in streams:
-            self.add_new_stream(stream)
+            self.add_new_stream(stream_url=stream)
 
     def add_new_stream(self, *args, stream_url=None, stream_quality=cfg[CONFIG_QUALITY]):
         """Adds a new player for the specified stream in the grid."""
