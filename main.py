@@ -258,7 +258,8 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except Exception:
+    except Exception as e:
+        print(e)
         sys.exit(textwrap.dedent(
             """
             Could not start app, are you sure you fullfill the requirements?
