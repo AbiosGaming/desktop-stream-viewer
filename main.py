@@ -259,11 +259,17 @@ if __name__ == "__main__":
     try:
         main()
     except Exception as e:
-        print(e)
+        if str(e) == "no function 'libvlc_new'":
+            sys.exit(textwrap.dedent(
+                """
+                Crap! Could not call some of the VLC functions...
+                Be a darling and check that you've installed libVLC 3.0 correctly <3
+                """
+            ))
+
         sys.exit(textwrap.dedent(
             """
-            Could not start app, are you sure you fullfill the requirements?
-              - Qt5
-              - VLC 3.0
-            """
+            Crap! You've encountered the following error: {error}
+            Post an issue about it in the GitHub repo and someone will help you asap! <3
+            """.format(error=str(e))
         ))
