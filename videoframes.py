@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import sys
 import platform
-import vlc
+import sys
 
 from PyQt5 import QtWidgets, QtCore, uic
 
+import vlc
 from constants import FRAME_SELECT_STYLE, SLIDER_MAX_VALUE
 from containers import LiveStreamContainer, RewindedStreamContainer
+from utils import OS
 
 
 class _VideoFrame(QtWidgets.QFrame):
@@ -45,11 +46,13 @@ class _VideoFrame(QtWidgets.QFrame):
         # TODO: Some other solution
         self.findChild(QtCore.QObject, "toolButton").clicked.connect(self.toggle_playback)
         # Bind the player
-        if platform.system() == "Linux":
+        # Get the current operating system
+        os = platform.system().lower()
+        if os == OS.LINUX:
             self.player.set_xwindow(self.draw_area.winId())
-        elif platform.system() == "Windows":
+        elif os == OS.WINDOWS:
             self.player.set_hwnd(self.draw_area.winId())
-        elif platform.system() == "Darwin":
+        elif os == OS.MAC_OS:
             self.player.set_nsobject(int(self.draw_area.winId()))
         else:
             sys.exit("Platform unsupported")
