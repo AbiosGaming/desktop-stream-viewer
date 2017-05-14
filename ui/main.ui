@@ -931,22 +931,29 @@
     <addaction name="ReopenStream"/>
     <addaction name="ExportStreamsToClipboard"/>
     <addaction name="ImportStreamsFromClipboard"/>
+    <addaction name="Recent_Session"/>
    </widget>
    <widget class="QMenu" name="AddStream">
     <property name="title">
-     <string>Add stream</string>
+     <string>Add Stream</string>
     </property>
+    <widget class="QMenu" name="menuRecent">
+     <property name="title">
+      <string>Recent</string>
+     </property>
+    </widget>
     <addaction name="AddNewStream"/>
+    <addaction name="menuRecent"/>
    </widget>
    <addaction name="open"/>
    <addaction name="AddStream"/>
   </widget>
   <action name="AddNewStream">
    <property name="text">
-    <string>Open new stream</string>
+    <string>New</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+O</string>
+    <string>Ctrl+N</string>
    </property>
   </action>
   <action name="ExportStreamsToClipboard">
@@ -970,10 +977,10 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Mute all streams</string>
+    <string>Mute</string>
    </property>
    <property name="toolTip">
-    <string>Mute all streams</string>
+    <string>Mute</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+M</string>
@@ -999,6 +1006,9 @@
    <property name="text">
     <string>Import Session</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+I</string>
+   </property>
   </action>
   <action name="ReopenStream">
    <property name="text">
@@ -1006,6 +1016,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Z</string>
+   </property>
+  </action>
+  <action name="Recent_Session">
+   <property name="text">
+    <string>Recent Session</string>
    </property>
   </action>
  </widget>

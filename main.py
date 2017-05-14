@@ -56,6 +56,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.__bind_view_to_action(ADD_NEW_STREAM, self.add_new_stream)
         self.__bind_view_to_action(IMPORT_STREAMS_FROM_CLIPBOARD, self.import_streams_from_clipboard)
 
+        self.recent_menu = self.ui.findChild(QtCore.QObject, "menuRecent")
+
         # Create the loading gear but dont add it to anywhere, just save it
         self.setup_loading_gif()
 
@@ -66,6 +68,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.model.add_new_videoframe(stream_url, stream_options, quality)
         # Remove the loading feedback
         self.hide_loading_gif()
+        # Update recent meny option
+        self.update_recent()
 
     def setup_loading_gif(self):
         """Creates the loading gear as QMovie and its label."""
@@ -100,6 +104,20 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         clipboard.clear(mode=clipboard.Clipboard)
         clipboard.setText(text, mode=clipboard.Clipboard)
 
+    def update_recent(self):
+        """Updates the recent menu option."""
+        self.recent_menu.clear()
+        # Only the 30 recently added streams are shown
+        for url in self.grid.url_list[:30]:
+            action = QtWidgets.QAction(url, parent=self)
+            action.triggered.connect(self.add_stream_from_history(action.text()))
+            self.recent_menu.addAction(action)
+
+    def add_stream_from_history(self, stream_url):
+        def func():
+            self.add_new_stream(stream_url)
+        return func
+
     def import_streams_from_clipboard(self):
         """Imports all streams from the users clipboard."""
         streams = QtWidgets.QApplication.clipboard().text().rsplit("\n")
@@ -107,7 +125,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         for stream in streams:
             self.add_new_stream(stream_url=stream)
 
-    def add_new_stream(self, *args, stream_url=None, stream_quality=cfg[CONFIG_QUALITY]):
+    def add_new_stream(self, stream_url=None, stream_quality=cfg[CONFIG_QUALITY]):
         """Adds a new player for the specified stream in the grid."""
         if not stream_url:
             stream_url, ok = QtWidgets.QInputDialog.getText(

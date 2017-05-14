@@ -30,6 +30,7 @@ class VideoFrameGrid(QtWidgets.QGridLayout):
         self.coordinates = VideoFrameCoordinates(x=0, y=0)
         self.selected_frame = None
         self.fullscreen = False
+        self.url_list = []
 
     def _add_videoframe(self, videoframe):
         """Adds the provided videoframeobject to the VideoFrameGrid."""
@@ -50,6 +51,7 @@ class VideoFrameGrid(QtWidgets.QGridLayout):
         videoframe._coordinates = self.coordinates
         videoframe._delete_stream = self.delete_stream
         self._add_videoframe(videoframe)
+        self.url_list.insert(0, stream_url)
 
     def swap_frame(self, frame):
         """Swaps the provided VideoFrame with the currently selected one."""
