@@ -3,7 +3,7 @@
 import sip
 
 from PyQt5 import QtWidgets
-from coordinates import VideoFrameCoordinates
+from models.coordinates import VideoFrameCoordinates
 from videoframes import LiveVideoFrame
 from config import cfg
 from constants import CONFIG_MUTE

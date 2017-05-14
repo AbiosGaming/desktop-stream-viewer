@@ -2,28 +2,28 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import threading
 import textwrap
+import threading
 
 import streamlink
 # Qt imports
 from PyQt5 import QtWidgets, uic, QtCore, QtGui
 
+from config import cfg
 from constants import (
     MUTE_CHECKBOX, MUTE_ALL_STREAMS, EXPORT_STREAMS_TO_CLIPBOARD,
     IMPORT_STREAMS_FROM_CLIPBOARD, ADD_NEW_STREAM, CONFIG_QUALITY,
 )
-from videoframegrid import VideoFrameGrid
 from containers import LiveStreamContainer
-from config import cfg
 from enums import AddStreamError
-from coordinates import VideoFrameCoordinates
+from models import StreamModel, VideoFrameCoordinates
+from videoframegrid import VideoFrameGrid
 
 
 class ApplicationWindow(QtWidgets.QMainWindow):
     """The main GUI window."""
 
-    # Define a new signal, used to add_frames from the seperate thread
+    # Define a new signal, used to add_frames from the separate thread
     add_frame = QtCore.pyqtSignal(str, dict, str, VideoFrameCoordinates)
     # Used when the add stream thread fails
     fail_add_stream = QtCore.pyqtSignal(AddStreamError, tuple)
@@ -36,7 +36,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.add_frame.connect(self.setup_videoframe)
         self.fail_add_stream.connect(self.on_fail_add_stream)
 
-        self.streamlink_session = streamlink.Streamlink()
+        self.model = StreamModel(self.grid)
 
     def setup_ui(self):
         """Loads the main.ui file and sets up the window and grid."""
@@ -50,14 +50,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         # Connect up all actions.
         self.actions = {}
         self.actions[MUTE_CHECKBOX] = self.ui.findChild(QtCore.QObject, MUTE_ALL_STREAMS)
-        self.actions[MUTE_CHECKBOX].toggled.connect(self.mute_all_streams)
 
-        self.ui.findChild(QtCore.QObject, EXPORT_STREAMS_TO_CLIPBOARD) \
-            .triggered.connect(self.export_streams_to_clipboard)
-        self.ui.findChild(QtCore.QObject, ADD_NEW_STREAM) \
-            .triggered.connect(self.add_new_stream)
-        self.ui.findChild(QtCore.QObject, IMPORT_STREAMS_FROM_CLIPBOARD) \
-            .triggered.connect(self.import_streams_from_clipboard)
+        self.__bind_view_to_action(MUTE_ALL_STREAMS, self.mute_all_streams, toggled=True)
+        self.__bind_view_to_action(EXPORT_STREAMS_TO_CLIPBOARD, self.export_streams_to_clipboard)
+        self.__bind_view_to_action(ADD_NEW_STREAM, self.add_new_stream)
+        self.__bind_view_to_action(IMPORT_STREAMS_FROM_CLIPBOARD, self.import_streams_from_clipboard)
 
         # Create the loading gear but dont add it to anywhere, just save it
         self.setup_loading_gif()
@@ -66,7 +63,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
     def setup_videoframe(self, stream_url, stream_options, quality):
         """Sets up a videoframe and with the provided stream information."""
-        self.grid.add_new_videoframe(stream_url, stream_options, quality)
+        self.model.add_new_videoframe(stream_url, stream_options, quality)
         # Remove the loading feedback
         self.hide_loading_gif()
 
@@ -83,32 +80,22 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
     def show_loading_gif(self):
         """Shows the loading gif on the next frame location"""
-        self.grid.addWidget(self.loading, self.grid.coordinates.x, self.grid.coordinates.y)
+        self.model.add_widget(self.loading, self.model.grid.coordinates.x, self.model.grid.coordinates.y)
         self.loading.show()
 
     def hide_loading_gif(self):
         """Removes the loading gif from the next frame location"""
-        self.grid.removeWidget(self.loading)
+        self.model.remove_widget(self.loading)
         self.loading.hide()
 
     def mute_all_streams(self):
         """Toggles the audio of all the players."""
-        for videoframe in self.grid.videoframes:
-            if self.actions[MUTE_CHECKBOX].isChecked():
-                videoframe.player.audio_set_mute(True)
-            else:
-                if not videoframe.is_muted:
-                    videoframe.player.audio_set_mute(False)
+        is_mute_checked = self.actions[MUTE_CHECKBOX].isChecked()
+        self.model.mute_all_streams(is_mute_checked)
 
     def export_streams_to_clipboard(self):
         """Exports all streams to the users clipboard."""
-        stream_urls = []
-
-        for videoframe in self.grid.videoframes:
-            stream_urls.append(videoframe.stream.url)
-
-        text = "\n".join(stream_urls)
-
+        text = self.model.export_streams_to_clipboard()
         clipboard = QtWidgets.QApplication.clipboard()
         clipboard.clear(mode=clipboard.Clipboard)
         clipboard.setText(text, mode=clipboard.Clipboard)
@@ -135,14 +122,14 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         # Give some feedback to the user
         self.show_loading_gif()
 
-        # Run the rest on a seperate thread to be able to show the loading feedback
+        # Run the rest on a separate thread to be able to show the loading feedback
         # Also helps a lot with lag
         threading.Thread(target=self._add_new_stream, args=(stream_url, stream_quality)).start()
 
     def _add_new_stream(self, stream_url=None, stream_quality=cfg[CONFIG_QUALITY]):
         """Fetches qualities and if possible adds a frame to the main window."""
         try:
-            stream_options = self.streamlink_session.streams(stream_url)
+            stream_options = self.model.get_stream_options(stream_url)
 
             # If the stream is not currently broadcasting, 'stream_options'
             # will be an empty list.
@@ -150,10 +137,17 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 raise streamlink.exceptions.NoStreamsError(stream_url)
 
             if stream_quality not in stream_options:
-                self.fail_add_stream.emit(AddStreamError.DEFAULT_QUALITY_MISSING, (stream_options, stream_url, stream_quality))
+                self.fail_add_stream.emit(
+                    AddStreamError.DEFAULT_QUALITY_MISSING,
+                    (
+                        stream_options,
+                        stream_url,
+                        stream_quality
+                    )
+                )
                 return
 
-            self.add_frame.emit(stream_url, stream_options, stream_quality, self.grid.coordinates)
+            self.add_frame.emit(stream_url, stream_options, stream_quality, self.model.grid.coordinates)
 
         except streamlink.exceptions.NoPluginError:
             self.fail_add_stream.emit(
@@ -229,6 +223,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox().warning(self, title, text)
 
         self.add_new_stream()
+
+    def __bind_view_to_action(self, view, action, toggled=False):
+        return self.ui.findChild(QtCore.QObject, view).toggled.connect(action) if toggled else self.ui.findChild(
+            QtCore.QObject, view).triggered.connect(action)
 
     def _get_user_quality_preference(self, stream_options):
         """Prompts the user to select what quality they want on the stream."""
