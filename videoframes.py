@@ -135,9 +135,14 @@ class LiveVideoFrame(_VideoFrame):
     Args:
         vlc_instance: VLC instance object.
     """
+
+    stream_end = QtCore.pyqtSignal()
+
     def __init__(self, parent, stream_url, stream_options, quality):
         super(LiveVideoFrame, self).__init__(parent)
         self.stream = LiveStreamContainer(self.vlc_instance, stream_url, stream_options, quality)
+        self.stream.on_stream_end = self.stream_end.emit
+        self.stream_end.connect(self.on_stream_end)
         self.player.set_media(self.stream.media)
         self.player.play()
 
@@ -153,6 +158,9 @@ class LiveVideoFrame(_VideoFrame):
         self.findChild(QtCore.QObject, "seek_slider").hide()
         # Connect the rewind button
         self.findChild(QtCore.QObject, "rewind_button").clicked.connect(self.rewind)
+
+        # Store stream_end_label
+        self.stream_end_label = self.findChild(QtWidgets.QLabel, "end_label")
 
     def setup_actions(self):
         super(LiveVideoFrame, self).setup_actions()
@@ -180,6 +188,17 @@ class LiveVideoFrame(_VideoFrame):
             quality = quality_action.text()
             if user_action == quality_action and quality != self.stream.quality:
                 self.change_stream_quality(quality)
+
+    def resizeEvent(self, event):
+        rect = self.geometry()
+        label_rect = self.stream_end_label.geometry()
+        self.stream_end_label.move(
+            rect.width() / 2 - label_rect.width() / 2,
+            rect.height() / 2 - label_rect.height() / 2
+        )
+
+    def on_stream_end(self):
+        self.stream_end_label.show()
 
     def contextMenuEvent(self, event):
         super(LiveVideoFrame, self).context_menu(event)

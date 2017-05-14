@@ -17,7 +17,6 @@ class StreamContainer(ABC):
     Attributes:
         media (libvlc_media_t*): The media object that vlc uses, includes callbacks.
     """
-
     def __init__(self, vlc_instance):
         # Cast this container to a c pointer to use in the callbacks
         self._opaque = ctypes.cast(ctypes.pointer(
@@ -71,6 +70,9 @@ class LiveStreamContainer(StreamContainer):
     The LiveStreamContainer pulls all of it's video data directly from the
     livestream itself, while at the same time caching away previous data in a
     buffer.
+
+    Add attribute on_stream_end() to bind a callback for when the stream has ended.
+    Note: Do not try to remove this Container in that callback, as it will not work.
     """
     def __init__(self, vlc_instance, url, streams, quality, buffer_length=200):
         super().__init__(vlc_instance)
@@ -93,6 +95,14 @@ class LiveStreamContainer(StreamContainer):
         """
         data = self.stream.read(length)
         self.buffer.append(data)
+        data_len = len(data)
+
+        # if the stream has ended invoke on_stream_end
+        if data_len == 0:
+            try:
+                self.on_stream_end()
+            except AttributeError:
+                pass
 
         for i, val in enumerate(data):
             buf[i] = val
