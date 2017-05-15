@@ -139,6 +139,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             if not ok:
                 return
 
+        # Lower case the stream url for easier handling in future cases
+        stream_url = stream_url.lower()
+
         # Give some feedback to the user
         self.show_loading_gif()
 
