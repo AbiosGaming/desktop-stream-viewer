@@ -145,9 +145,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         # Give some feedback to the user
         self.show_loading_gif()
 
-        # Save url to stream history
-        self.save_stream_to_history(stream_url)
-
         # Run the rest on a separate thread to be able to show the loading feedback
 
         # Also helps a lot with lag
@@ -175,6 +172,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 return
 
             self.add_frame.emit(stream_url, stream_options, stream_quality, self.model.grid.coordinates)
+
+            # Save url to stream history
+            self.save_stream_to_history(stream_url)
 
         except streamlink.exceptions.NoPluginError:
             self.fail_add_stream.emit(
