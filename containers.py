@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 from collections import deque
 
 import callbacks as cb
+from constants import CONFIG_BUFFER_SIZE, CONFIG_BUFFER_STREAM
+from config import cfg
 
 
 class StreamContainer(ABC):
@@ -74,9 +76,11 @@ class LiveStreamContainer(StreamContainer):
     Add attribute on_stream_end() to bind a callback for when the stream has ended.
     Note: Do not try to remove this Container in that callback, as it will not work.
     """
-    def __init__(self, vlc_instance, url, streams, quality, buffer_length=200):
+    def __init__(self, vlc_instance, url, streams, quality, buffer_length=None):
         super().__init__(vlc_instance)
-
+        # Use default value for buffer_length if none specified
+        if not buffer_length:
+            buffer_length = cfg[CONFIG_BUFFER_SIZE]
         self.streams = streams
         self.stream = self.streams[quality].open()
         self.buffer = deque(maxlen=buffer_length)
@@ -94,7 +98,8 @@ class LiveStreamContainer(StreamContainer):
         it away in the buffer accordingly.
         """
         data = self.stream.read(length)
-        self.buffer.append(data)
+        if cfg[CONFIG_BUFFER_STREAM]:
+            self.buffer.append(data)
         data_len = len(data)
 
         # if the stream has ended invoke on_stream_end

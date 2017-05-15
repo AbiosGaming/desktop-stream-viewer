@@ -5,8 +5,6 @@ import sip
 from PyQt5 import QtWidgets
 from models.coordinates import VideoFrameCoordinates
 from videoframes import LiveVideoFrame
-from config import cfg
-from constants import CONFIG_MUTE
 
 
 class VideoFrameGrid(QtWidgets.QGridLayout):
@@ -45,7 +43,6 @@ class VideoFrameGrid(QtWidgets.QGridLayout):
     def add_new_videoframe(self, stream_url, stream_options, quality):
         """Creates and adds a new LiveVideoFrame to the VideoFrameGrid."""
         videoframe = self._create_videoframe(stream_url, stream_options, quality)
-        videoframe.player.audio_set_mute(cfg[CONFIG_MUTE])
         videoframe._swap = self.swap_frame
         videoframe._fullscreen = self.toggle_fullscreen
         videoframe._coordinates = self.coordinates

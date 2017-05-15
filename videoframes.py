@@ -6,9 +6,12 @@ import sys
 from PyQt5 import QtWidgets, QtCore, uic
 
 import vlc
-from constants import FRAME_SELECT_STYLE, SLIDER_MAX_VALUE
+from constants import (
+    FRAME_SELECT_STYLE, SLIDER_MAX_VALUE, CONFIG_MUTE, CONFIG_BUFFER_STREAM
+)
 from containers import LiveStreamContainer, RewindedStreamContainer
 from utils import OS
+from config import cfg
 
 
 class _VideoFrame(QtWidgets.QFrame):
@@ -35,7 +38,10 @@ class _VideoFrame(QtWidgets.QFrame):
         # Build the ui for this videoFrame
         self.setup_ui()
 
-        self.is_muted = False
+        # Set default value for mute
+        self.is_muted = cfg[CONFIG_MUTE]
+        self.player.audio_set_mute(self.is_muted)
+
         self.selected = False
 
     def setup_ui(self):
@@ -212,6 +218,13 @@ class LiveVideoFrame(_VideoFrame):
         self.player.play()
 
     def rewind(self):
+        if not cfg[CONFIG_BUFFER_STREAM]:
+            QtWidgets.QMessageBox().warning(
+                self,
+                "Warning",
+                "Cannot Rewind. You currently have buffering turned off."
+            )
+            return
         if self.rewinded is None:
             self.rewinded = QtWidgets.QMainWindow(parent=self)
             self.rewinded.setWindowTitle("Rewinded Stream")

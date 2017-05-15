@@ -127,7 +127,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         for stream in streams:
             self.add_new_stream(stream_url=stream)
 
-    def add_new_stream(self, stream_url=None, stream_quality=cfg[CONFIG_QUALITY]):
+    def add_new_stream(self, stream_url=None, stream_quality=None):
         """Adds a new player for the specified stream in the grid."""
         if not stream_url:
             stream_url, ok = QtWidgets.QInputDialog.getText(
@@ -139,6 +139,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             if not ok:
                 return
 
+        # Use default quality if not specified
+        if not stream_quality:
+            stream_quality = cfg[CONFIG_QUALITY]
         # Lower case the stream url for easier handling in future cases
         stream_url = stream_url.lower()
 
