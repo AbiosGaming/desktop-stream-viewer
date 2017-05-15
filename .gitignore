@@ -24,3 +24,6 @@ config.json
 
 # Buildfiles
 build/
+
+# Ignore the history file
+history.txt
