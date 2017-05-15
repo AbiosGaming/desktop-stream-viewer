@@ -13,6 +13,7 @@ from config import cfg
 from constants import (
     MUTE_CHECKBOX, MUTE_ALL_STREAMS, EXPORT_STREAMS_TO_CLIPBOARD,
     IMPORT_STREAMS_FROM_CLIPBOARD, ADD_NEW_STREAM, CONFIG_QUALITY,
+    HISTORY_FILE, LOAD_STREAM_HISTORY,
 )
 from containers import LiveStreamContainer
 from enums import AddStreamError
@@ -55,6 +56,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.__bind_view_to_action(EXPORT_STREAMS_TO_CLIPBOARD, self.export_streams_to_clipboard)
         self.__bind_view_to_action(ADD_NEW_STREAM, self.add_new_stream)
         self.__bind_view_to_action(IMPORT_STREAMS_FROM_CLIPBOARD, self.import_streams_from_clipboard)
+        self.__bind_view_to_action(LOAD_STREAM_HISTORY, self.stream_history)
 
         self.recent_menu = self.ui.findChild(QtCore.QObject, "menuRecent")
 
@@ -140,7 +142,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         # Give some feedback to the user
         self.show_loading_gif()
 
+        # Save url to stream history
+        self.save_stream_to_history(stream_url)
+
         # Run the rest on a separate thread to be able to show the loading feedback
+
         # Also helps a lot with lag
         threading.Thread(target=self._add_new_stream, args=(stream_url, stream_quality)).start()
 
@@ -263,6 +269,30 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             ),
             reversed(filtered_qualities)
         )
+
+    def stream_history(self):
+        """Starts streaming all streams that were playing when last session was closed."""
+        stream_history = self.load_stream_history()
+        if stream_history:
+            for stream in stream_history:
+                self.add_new_stream(stream)
+
+    def save_stream_to_history(self, url):
+        """Saves a stream to history file."""
+        with open(HISTORY_FILE, 'a') as f:
+            f.write(url + '\n')
+
+    def load_stream_history(self):
+        """Loads up all streams from last session."""
+        stream_history = set()
+        with open(HISTORY_FILE, 'r') as f:
+            lines = f.readlines()
+            for line in lines:
+                stream_history.add(line.strip("\n"))
+        # Clear history file
+        open(HISTORY_FILE, 'w').close()
+        if len(stream_history) > 0:
+            return stream_history
 
 
 def main():

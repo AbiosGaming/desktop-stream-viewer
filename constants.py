@@ -7,6 +7,8 @@ EXPORT_STREAMS_TO_CLIPBOARD = 'ExportStreamsToClipboard'
 IMPORT_STREAMS_FROM_CLIPBOARD = 'ImportStreamsFromClipboard'
 MUTE_ALL_STREAMS = 'MuteAllStreams'
 ADD_NEW_STREAM = 'AddNewStream'
+EXPORT_STREAMS_TO_CLIPBOARD = 'ExportStreamsToClipboard'
+LOAD_STREAM_HISTORY = 'LoadStreamsFromHistory'
 CONFIG_FILE = 'config.json'
 CONFIG_MUTE = 'mute'
 CONFIG_QUALITY = 'quality'
@@ -25,3 +27,4 @@ FRAME_SELECT_STYLE = """QFrame
                             border-width: 2px;
                             border-color: blue;
                         }"""
+HISTORY_FILE = 'history.txt'
