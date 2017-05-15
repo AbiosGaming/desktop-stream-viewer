@@ -216,11 +216,18 @@ class LiveVideoFrame(_VideoFrame):
             self.rewinded = QtWidgets.QMainWindow(parent=self)
             self.rewinded.setWindowTitle("Rewinded Stream")
             self.rewinded.frame = RewindedVideoFrame(self.rewinded, self.stream.buffer)
+            # Set events:
             self.rewinded.closeEvent = self.close_rewinded
+            self.rewinded.frame._fullscreen = self.fullscreen_rewinded
+
             self.rewinded.setCentralWidget(self.rewinded.frame)
             self.rewinded.show()
+            # Init values
+            self.rewinded.is_fullscreen = False
 
-    def close_rewinded(self, event):
+    # Following functions belong to the rewinded window
+
+    def close_rewinded(self, _):
         """Called whenever the rewinded window is closed"""
         # First stop and release the media player
         self.rewinded.frame.player.stop()
@@ -230,6 +237,16 @@ class LiveVideoFrame(_VideoFrame):
         # To remove the rewinded video window;
         # Let the garbage collector do its magic
         self.rewinded = None
+
+    def fullscreen_rewinded(self, _):
+        """Called whenever the rewinded window is to be fullscreened"""
+        if self.rewinded.is_fullscreen:
+            self.rewinded.setWindowState(self.rewinded.window_state)
+            self.rewinded.is_fullscreen = False
+        else:
+            self.rewinded.window_state = self.windowState()
+            self.rewinded.showFullScreen()
+            self.rewinded.is_fullscreen = True
 
 
 class RewindedVideoFrame(_VideoFrame):
