@@ -51,6 +51,9 @@ class VideoFrameGrid(QtWidgets.QGridLayout):
         videoframe._coordinates = self.coordinates
         videoframe._delete_stream = self.delete_stream
         self._add_videoframe(videoframe)
+
+        if stream_url in self.url_list:
+            self.url_list.remove(stream_url)
         self.url_list.insert(0, stream_url)
 
     def swap_frame(self, frame):
