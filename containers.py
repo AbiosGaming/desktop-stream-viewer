@@ -127,11 +127,6 @@ class LiveStreamContainer(StreamContainer):
     def quality_options(streams):
         return sorted(streams.keys())
 
-    @staticmethod
-    def filtered_quality_options(streams):
-        return [opt for opt in LiveStreamContainer.quality_options(streams)
-                if not opt[0].isalpha()]
-
     def update_info(self, url, quality):
         """Updates the current quality as well as available qualities of
         the stream.
@@ -140,7 +135,6 @@ class LiveStreamContainer(StreamContainer):
         self.quality = quality
 
         self.all_qualities = LiveStreamContainer.quality_options(self.streams)
-        self.filtered_qualities = LiveStreamContainer.filtered_quality_options(self.streams)
 
     def change_stream_quality(self, quality):
         """Changes the streams quality."""

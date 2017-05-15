@@ -174,7 +174,7 @@ class LiveVideoFrame(_VideoFrame):
 
         # Add the quality options to the submenu.
         self.quality_actions = []
-        for opt in self.stream.filtered_qualities:
+        for opt in self.stream.all_qualities:
             action = quality_submenu.addAction(opt)
             action.setCheckable(True)
 

@@ -260,7 +260,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
     def _get_user_quality_preference(self, stream_options):
         """Prompts the user to select what quality they want on the stream."""
-        filtered_qualities = LiveStreamContainer.filtered_quality_options(
+        qualities = LiveStreamContainer.quality_options(
             stream_options
         )
 
@@ -273,7 +273,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 Please select another one:
                 """
             ),
-            reversed(filtered_qualities)
+            reversed(qualities)
         )
 
     def stream_history(self):
