@@ -49,7 +49,7 @@
     <string>Pause</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="delete_button">
+  <widget class="QPushButton" name="forward_button">
    <property name="geometry">
     <rect>
      <x>0</x>
@@ -59,7 +59,20 @@
     </rect>
    </property>
    <property name="text">
-    <string>Delete</string>
+    <string>Forward</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="backward_button">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>100</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Backward</string>
    </property>
   </widget>
   <widget class="QSlider" name="volume_slider">
@@ -76,25 +89,6 @@
    </property>
    <property name="orientation">
     <enum>Qt::Vertical</enum>
-   </property>
-  </widget>
-  <widget class="QLabel" name="end_label">
-   <property name="geometry">
-    <rect>
-     <x>90</x>
-     <y>30</y>
-     <width>150</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Stream has ended.</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignCenter</set>
-   </property>
-   <property name="visible">
-    <bool>false</bool>
    </property>
   </widget>
  </widget>

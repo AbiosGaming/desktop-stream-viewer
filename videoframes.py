@@ -44,13 +44,10 @@ class _VideoFrame(QtWidgets.QFrame):
 
         self.selected = False
 
-    def setup_ui(self):
-        uic.loadUi("ui/frame.ui", self)
+    def setup_ui(self, ui_file):
+        uic.loadUi(ui_file, self)
         # Find the draw area
         self.draw_area = self.findChild(QtCore.QObject, "drawArea")
-        # Connect the playback toggle to the toolbox
-        # TODO: Some other solution
-        self.findChild(QtCore.QObject, "toolButton").clicked.connect(self.toggle_playback)
         # Bind the player
         # Get the current operating system
         os = platform.system().lower()
@@ -156,20 +153,20 @@ class LiveVideoFrame(_VideoFrame):
         self.rewinded = None
 
     def setup_ui(self):
-        super(LiveVideoFrame, self).setup_ui()
+        super(LiveVideoFrame, self).setup_ui("ui/frame.ui")
 
-        # Hide the slider
-        # TODO: Perhaps it should not even be created?
-        # is there a huge overhead for QtWidgets?
-        self.findChild(QtCore.QObject, "seek_slider").hide()
-        # Connect the rewind button
-        self.findChild(QtCore.QObject, "rewind_button").clicked.connect(self.rewind)
+        self.findChild(QtCore.QObject, "delete_button").clicked.connect(self.delete_stream)
+        self.findChild(QtCore.QObject, "pause_button").clicked.connect(self.toggle_playback)
 
         # Store stream_end_label
         self.stream_end_label = self.findChild(QtWidgets.QLabel, "end_label")
 
     def setup_actions(self):
         super(LiveVideoFrame, self).setup_actions()
+        self.rewind_action = self.context_menu.addAction("Rewind")
+        self.rewind_action.triggered.connect(self.rewind)
+        self.context_menu.addSeparator()
+
         quality_submenu = QtWidgets.QMenu("Change quality", parent=self)
 
         # Add the quality options to the submenu.
@@ -194,14 +191,6 @@ class LiveVideoFrame(_VideoFrame):
             quality = quality_action.text()
             if user_action == quality_action and quality != self.stream.quality:
                 self.change_stream_quality(quality)
-
-    def resizeEvent(self, event):
-        rect = self.geometry()
-        label_rect = self.stream_end_label.geometry()
-        self.stream_end_label.move(
-            rect.width() / 2 - label_rect.width() / 2,
-            rect.height() / 2 - label_rect.height() / 2
-        )
 
     def on_stream_end(self):
         self.stream_end_label.show()
@@ -228,6 +217,7 @@ class LiveVideoFrame(_VideoFrame):
         if self.rewinded is None:
             self.rewinded = QtWidgets.QMainWindow(parent=self)
             self.rewinded.setWindowTitle("Rewinded Stream")
+            self.rewinded.resize(QtWidgets.QDesktopWidget().availableGeometry(-1).size() * 0.5)
             self.rewinded.frame = RewindedVideoFrame(self.rewinded, self.stream.buffer)
             # Set events:
             self.rewinded.closeEvent = self.close_rewinded
@@ -238,8 +228,30 @@ class LiveVideoFrame(_VideoFrame):
             # Init values
             self.rewinded.is_fullscreen = False
 
-    # Following functions belong to the rewinded window
+    def resizeEvent(self, event):
+        rect = self.geometry()
+        deleteButton_rect = self.delete_button.geometry()
+        pauseButton_rect = self.pause_button.geometry()
+        volumeSlider_rect = self.volume_slider.geometry()
+        label_rect = self.stream_end_label.geometry()
+        self.delete_button.move(
+            rect.width() - deleteButton_rect.size().width(),
+            0
+        )
+        self.pause_button.move(
+            0,
+            rect.height() - pauseButton_rect.size().height()
+        )
+        self.volume_slider.move(
+            rect.width() - volumeSlider_rect.size().width(),
+            rect.height() - volumeSlider_rect.size().height()
+        )
+        self.stream_end_label.move(
+            rect.width() / 2 - label_rect.width() / 2,
+            rect.height() / 2 - label_rect.height() / 2
+        )
 
+    # Following functions belong to the rewinded window
     def close_rewinded(self, _):
         """Called whenever the rewinded window is closed"""
         # First stop and release the media player
@@ -279,17 +291,11 @@ class RewindedVideoFrame(_VideoFrame):
         self.player.play()
 
     def setup_ui(self):
-        super(RewindedVideoFrame, self).setup_ui()
-        # Find the slider
-        self.slider = self.findChild(QtCore.QObject, "seek_slider")
-        # Seek when the slider is released
-        self.slider.pressed = False
-        self.slider.sliderReleased.connect(self.scrub)
-        self.slider.sliderPressed.connect(self.slider_pressed)
-        # Hide the rewind button:
-        self.findChild(QtCore.QObject, "rewind_button").hide()
+        super(RewindedVideoFrame, self).setup_ui("ui/rewoundframe.ui")
+
+        self.findChild(QtCore.QObject, "pause_button").clicked.connect(self.toggle_playback)
+
         self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.update_slider_value)
         self.timer.start(1)
 
     def on_seek(self, offset):
@@ -320,3 +326,26 @@ class RewindedVideoFrame(_VideoFrame):
         percentage_played = self.player.get_time() / (145 * len(self.stream.buffer))
         if not self.slider.pressed:
             self.slider.setValue(percentage_played * SLIDER_MAX_VALUE)
+
+    def resizeEvent(self, event):
+        rect = self.geometry()
+        pauseButton_rect = self.pause_button.geometry()
+        volumeSlider_rect = self.volume_slider.geometry()
+        forwardButton_rect = self.forward_button.geometry()
+        backwardButton_rect = self.backward_button.geometry()
+        self.pause_button.move(
+            0,
+            rect.height() - pauseButton_rect.size().height()
+        )
+        self.volume_slider.move(
+            rect.width() - volumeSlider_rect.size().width(),
+            rect.height() - volumeSlider_rect.size().height()
+        )
+        self.forward_button.move(
+            rect.width() / 2 - forwardButton_rect.width() / 2 + 0.5 * forwardButton_rect.size().width(),
+            rect.height() - forwardButton_rect.size().height()
+        )
+        self.backward_button.move(
+            rect.width() / 2 - backwardButton_rect.width() / 2 - 0.5 * backwardButton_rect.size().width(),
+            rect.height() - backwardButton_rect.size().height()
+        )
