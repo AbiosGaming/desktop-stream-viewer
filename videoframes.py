@@ -131,6 +131,27 @@ class _VideoFrame(QtWidgets.QFrame):
         else:
             self.select()
 
+    def resizeEvent(self, event):
+        rect = self.geometry()
+        pauseButton_rect = self.pause_button.geometry()
+        volumeSlider_rect = self.volume_slider.geometry()
+        self.pause_button.move(
+            0,
+            rect.height() - pauseButton_rect.size().height()
+        )
+        self.volume_slider.move(
+            rect.width() - volumeSlider_rect.size().width(),
+            rect.height() - volumeSlider_rect.size().height()
+        )
+
+    def enterEvent(self, event):
+        self.pause_button.show()
+        self.volume_slider.show()
+
+    def leaveEvent(self, event):
+        self.pause_button.hide()
+        self.volume_slider.hide()
+
 
 class LiveVideoFrame(_VideoFrame):
     """A class representing a VideoFrame containing a **live** stream.
@@ -229,27 +250,26 @@ class LiveVideoFrame(_VideoFrame):
             self.rewinded.is_fullscreen = False
 
     def resizeEvent(self, event):
+        super(LiveVideoFrame, self).resizeEvent(event)
         rect = self.geometry()
         deleteButton_rect = self.delete_button.geometry()
-        pauseButton_rect = self.pause_button.geometry()
-        volumeSlider_rect = self.volume_slider.geometry()
         label_rect = self.stream_end_label.geometry()
         self.delete_button.move(
             rect.width() - deleteButton_rect.size().width(),
             0
         )
-        self.pause_button.move(
-            0,
-            rect.height() - pauseButton_rect.size().height()
-        )
-        self.volume_slider.move(
-            rect.width() - volumeSlider_rect.size().width(),
-            rect.height() - volumeSlider_rect.size().height()
-        )
         self.stream_end_label.move(
             rect.width() / 2 - label_rect.width() / 2,
             rect.height() / 2 - label_rect.height() / 2
         )
+
+    def enterEvent(self, event):
+        super(LiveVideoFrame, self).enterEvent(event)
+        self.delete_button.show()
+
+    def leaveEvent(self, event):
+        super(LiveVideoFrame, self).leaveEvent(event)
+        self.delete_button.hide()
 
     # Following functions belong to the rewinded window
     def close_rewinded(self, _):
@@ -328,19 +348,10 @@ class RewindedVideoFrame(_VideoFrame):
             self.slider.setValue(percentage_played * SLIDER_MAX_VALUE)
 
     def resizeEvent(self, event):
+        super(RewindedVideoFrame, self).resizeEvent(event)
         rect = self.geometry()
-        pauseButton_rect = self.pause_button.geometry()
-        volumeSlider_rect = self.volume_slider.geometry()
         forwardButton_rect = self.forward_button.geometry()
         backwardButton_rect = self.backward_button.geometry()
-        self.pause_button.move(
-            0,
-            rect.height() - pauseButton_rect.size().height()
-        )
-        self.volume_slider.move(
-            rect.width() - volumeSlider_rect.size().width(),
-            rect.height() - volumeSlider_rect.size().height()
-        )
         self.forward_button.move(
             rect.width() / 2 - forwardButton_rect.width() / 2 + 0.5 * forwardButton_rect.size().width(),
             rect.height() - forwardButton_rect.size().height()
@@ -349,3 +360,13 @@ class RewindedVideoFrame(_VideoFrame):
             rect.width() / 2 - backwardButton_rect.width() / 2 - 0.5 * backwardButton_rect.size().width(),
             rect.height() - backwardButton_rect.size().height()
         )
+
+    def enterEvent(self, event):
+        super(RewindedVideoFrame, self).enterEvent(event)
+        self.forward_button.show()
+        self.backward_button.show()
+
+    def leaveEvent(self, event):
+        super(RewindedVideoFrame, self).leaveEvent(event)
+        self.forward_button.hide()
+        self.backward_button.hide()

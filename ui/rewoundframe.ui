@@ -48,6 +48,9 @@
    <property name="text">
     <string>Pause</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </widget>
   <widget class="QPushButton" name="forward_button">
    <property name="geometry">
@@ -61,6 +64,9 @@
    <property name="text">
     <string>Forward</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </widget>
   <widget class="QPushButton" name="backward_button">
    <property name="geometry">
@@ -73,6 +79,9 @@
    </property>
    <property name="text">
     <string>Backward</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </widget>
   <widget class="QSlider" name="volume_slider">
@@ -89,6 +98,9 @@
    </property>
    <property name="orientation">
     <enum>Qt::Vertical</enum>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </widget>
  </widget>

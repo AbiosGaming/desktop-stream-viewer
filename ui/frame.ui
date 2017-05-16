@@ -48,6 +48,9 @@
    <property name="text">
     <string>Pause</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </widget>
   <widget class="QPushButton" name="delete_button">
    <property name="geometry">
@@ -60,6 +63,9 @@
    </property>
    <property name="text">
     <string>Delete</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </widget>
   <widget class="QSlider" name="volume_slider">
@@ -76,6 +82,9 @@
    </property>
    <property name="orientation">
     <enum>Qt::Vertical</enum>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </widget>
   <widget class="QLabel" name="end_label">
