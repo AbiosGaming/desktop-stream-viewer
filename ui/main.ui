@@ -967,10 +967,10 @@
   </action>
   <action name="AddNewScheduledStream">
     <property name="text">
-      <string>Schedule new stream</string>
+      <string>Schedule New Stream</string>
     </property>
     <property name="shortcut">
-      <string>Ctrl+I</string>
+      <string>Ctrl+S</string>
     </property>
   </action>
   <action name="ExportStreamsToClipboard">
