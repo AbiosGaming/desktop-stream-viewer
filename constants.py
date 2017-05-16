@@ -7,6 +7,7 @@ EXPORT_STREAMS_TO_CLIPBOARD = 'ExportStreamsToClipboard'
 IMPORT_STREAMS_FROM_CLIPBOARD = 'ImportStreamsFromClipboard'
 MUTE_ALL_STREAMS = 'MuteAllStreams'
 ADD_NEW_STREAM = 'AddNewStream'
+ADD_NEW_SCHEDULED_STREAM = "AddNewScheduledStream"
 EXPORT_STREAMS_TO_CLIPBOARD = 'ExportStreamsToClipboard'
 LOAD_STREAM_HISTORY = 'LoadStreamsFromHistory'
 CONFIG_FILE = 'config.json'

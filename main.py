@@ -5,14 +5,18 @@ import sys
 import textwrap
 import threading
 
+from datetime import datetime
+
 import streamlink
 # Qt imports
 from PyQt5 import QtWidgets, uic, QtCore, QtGui
 
 from config import cfg
 from constants import (
-    MUTE_CHECKBOX, MUTE_ALL_STREAMS, EXPORT_STREAMS_TO_CLIPBOARD,
-    IMPORT_STREAMS_FROM_CLIPBOARD, ADD_NEW_STREAM, CONFIG_QUALITY,
+    MUTE_CHECKBOX, MUTE_ALL_STREAMS,
+    EXPORT_STREAMS_TO_CLIPBOARD, IMPORT_STREAMS_FROM_CLIPBOARD,
+    ADD_NEW_STREAM, ADD_NEW_SCHEDULED_STREAM,
+    CONFIG_QUALITY,
     HISTORY_FILE, LOAD_STREAM_HISTORY,
 )
 from containers import LiveStreamContainer
@@ -55,6 +59,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.__bind_view_to_action(MUTE_ALL_STREAMS, self.mute_all_streams, toggled=True)
         self.__bind_view_to_action(EXPORT_STREAMS_TO_CLIPBOARD, self.export_streams_to_clipboard)
         self.__bind_view_to_action(ADD_NEW_STREAM, self.add_new_stream)
+        self.__bind_view_to_action(ADD_NEW_SCHEDULED_STREAM, self.add_new_scheduled_stream)
         self.__bind_view_to_action(IMPORT_STREAMS_FROM_CLIPBOARD, self.import_streams_from_clipboard)
         self.__bind_view_to_action(LOAD_STREAM_HISTORY, self.stream_history)
 
@@ -152,6 +157,52 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         # Also helps a lot with lag
         threading.Thread(target=self._add_new_stream, args=(stream_url, stream_quality)).start()
+
+    def add_new_scheduled_stream(self, *args, stream_url=None, stream_quality=cfg[CONFIG_QUALITY]):
+        """Schedules a new stream at given time"""
+        if not stream_url:
+            stream_url, ok1 = QtWidgets.QInputDialog.getText(
+                self,
+                "Schedule stream",
+                "Enter the stream URL:"
+            )
+        if not ok1:
+            return
+
+        inputTime, ok2 = QtWidgets.QInputDialog.getText(
+            self,
+            "Schedule stream",
+            "Time (HH.MM)"
+        )
+
+        if not ok2:
+            return
+
+        # Add stream after certain delay (factory function)
+        def schedule_stream():
+            self.save_stream_to_history(stream_url)
+            self._add_new_stream(stream_url, stream_quality)
+
+        try:
+            h, m = inputTime.split(".")
+            now = datetime.now()
+            runtime = now.replace(hour=int(h), minute=int(m), second=0, microsecond=0)
+            if not runtime > now:
+                raise ValueError
+            delay = (runtime - now).total_seconds() * 1000
+            QtCore.QTimer(self).singleShot(delay, schedule_stream)
+            QtWidgets.QMessageBox.information(
+                self,
+                "Schedule stream",
+                "Succesfully scheduled stream at " + h + "." + m
+            )
+
+        except ValueError:
+            QtWidgets.QMessageBox().warning(
+                self,
+                "Error!",
+                "Not a valid time"
+            )
 
     def _add_new_stream(self, stream_url=None, stream_quality=cfg[CONFIG_QUALITY]):
         """Fetches qualities and if possible adds a frame to the main window."""

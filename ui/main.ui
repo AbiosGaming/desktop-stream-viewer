@@ -942,6 +942,7 @@
      </property>
     </widget>
     <addaction name="AddNewStream"/>
+    <addaction name="AddNewScheduledStream" />
     <addaction name="LoadStreamsFromHistory"/>
     <addaction name="menuRecent"/>
    </widget>
@@ -963,6 +964,14 @@
    <property name="shortcut">
     <string>Ctrl+H</string>
    </property>
+  </action>
+  <action name="AddNewScheduledStream">
+    <property name="text">
+      <string>Schedule new stream</string>
+    </property>
+    <property name="shortcut">
+      <string>Ctrl+I</string>
+    </property>
   </action>
   <action name="ExportStreamsToClipboard">
    <property name="text">
