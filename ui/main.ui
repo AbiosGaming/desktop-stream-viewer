@@ -931,7 +931,6 @@
     <addaction name="ReopenStream"/>
     <addaction name="ExportStreamsToClipboard"/>
     <addaction name="ImportStreamsFromClipboard"/>
-    <addaction name="Recent_Session"/>
     <addaction name="Settings"/>
    </widget>
    <widget class="QMenu" name="AddStream">
@@ -961,7 +960,7 @@
   </action>
   <action name="LoadStreamsFromHistory">
    <property name="text">
-    <string>Import Recent Session</string>
+    <string>Restore Previous Session</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+H</string>
@@ -1040,11 +1039,6 @@
   <action name="Settings">
    <property name="text">
     <string>Settings</string>
-   </property>
-  </action>
-  <action name="Recent_Session">
-   <property name="text">
-    <string>Recent Session</string>
    </property>
   </action>
  </widget>
