@@ -28,6 +28,7 @@ class VideoFrameGrid(QtWidgets.QGridLayout):
         self.coordinates = VideoFrameCoordinates(x=0, y=0)
         self.selected_frame = None
         self.fullscreen = False
+        self.window_state = self.parent.windowState()
         self.url_list = []
 
     def _add_videoframe(self, videoframe):
@@ -75,8 +76,8 @@ class VideoFrameGrid(QtWidgets.QGridLayout):
             else:
                 self.selected_frame = frame
 
-    def toggle_fullscreen(self, selected_frame):
-        if not self.fullscreen:
+    def toggle_fullscreen(self, selected_frame, force_minimize=False):
+        if not self.fullscreen and not force_minimize:
             for videoframe in self.videoframes:
                 if videoframe != selected_frame:
                     videoframe.hide()
@@ -87,7 +88,7 @@ class VideoFrameGrid(QtWidgets.QGridLayout):
             self.parent.showFullScreen()
             self.fullscreen = True
 
-        else:
+        elif self.fullscreen:
             for videoframe in self.videoframes:
                 if videoframe != selected_frame:
                     videoframe.show()

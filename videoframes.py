@@ -112,6 +112,7 @@ class _VideoFrame(QtWidgets.QFrame):
 
     def delete_stream(self):
         """Deletes videoframe/stream"""
+        self._fullscreen(self, force_minimize=True)
         self.player.stop()
         self.player.release()
         self._delete_stream(self)
