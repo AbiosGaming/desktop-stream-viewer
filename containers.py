@@ -76,7 +76,9 @@ class LiveStreamContainer(StreamContainer):
     Add attribute on_stream_end() to bind a callback for when the stream has ended.
     Note: Do not try to remove this Container in that callback, as it will not work.
     """
-    def __init__(self, vlc_instance, url, streams, quality, buffer_length=None):
+
+    def __init__(self, vlc_instance, url, streams, quality, buffer_length=cfg[CONFIG_BUFFER_SIZE]):
+
         super().__init__(vlc_instance)
         # Use default value for buffer_length if none specified
         if not buffer_length:

@@ -10,15 +10,18 @@ from datetime import datetime
 import streamlink
 # Qt imports
 from PyQt5 import QtWidgets, uic, QtCore, QtGui
+from PyQt5.QtWidgets import QDialog
 
 from config import cfg
 from constants import (
-    MUTE_CHECKBOX, MUTE_ALL_STREAMS,
-    EXPORT_STREAMS_TO_CLIPBOARD, IMPORT_STREAMS_FROM_CLIPBOARD,
-    ADD_NEW_STREAM, ADD_NEW_SCHEDULED_STREAM,
-    CONFIG_QUALITY,
-    HISTORY_FILE, LOAD_STREAM_HISTORY,
+    MUTE_CHECKBOX, MUTE_ALL_STREAMS, EXPORT_STREAMS_TO_CLIPBOARD,
+    IMPORT_STREAMS_FROM_CLIPBOARD, ADD_NEW_STREAM, CONFIG_MUTE,
+    CONFIG_QUALITY, CONFIG_BUFFER_STREAM, CONFIG_BUFFER_SIZE,
+    SETTINGS_MENU, BUTTONBOX, QUALITY_SETTINGS, MUTE_SETTINGS,
+    RECORD_SETTINGS, BUFFER_SIZE, ADD_NEW_SCHEDULED_STREAM,
+    HISTORY_FILE, LOAD_STREAM_HISTORY
 )
+
 from containers import LiveStreamContainer
 from enums import AddStreamError
 from models import StreamModel, VideoFrameCoordinates
@@ -61,6 +64,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.__bind_view_to_action(ADD_NEW_STREAM, self.add_new_stream)
         self.__bind_view_to_action(ADD_NEW_SCHEDULED_STREAM, self.add_new_scheduled_stream)
         self.__bind_view_to_action(IMPORT_STREAMS_FROM_CLIPBOARD, self.import_streams_from_clipboard)
+        self.__bind_view_to_action(SETTINGS_MENU, self.show_settings)
         self.__bind_view_to_action(LOAD_STREAM_HISTORY, self.stream_history)
 
         self.recent_menu = self.ui.findChild(QtCore.QObject, "menuRecent")
@@ -110,6 +114,45 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         clipboard = QtWidgets.QApplication.clipboard()
         clipboard.clear(mode=clipboard.Clipboard)
         clipboard.setText(text, mode=clipboard.Clipboard)
+
+    def show_settings(self):
+        """Shows a dialog containing settings for DSW"""
+        self.dialog = QDialog(self)
+        self.dialog.ui = uic.loadUi("ui/dialog.ui", self.dialog)
+        self.dialog.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.dialog.findChild(QtCore.QObject, BUTTONBOX) \
+            .accepted.connect(self.generate_conf)
+        if cfg[CONFIG_BUFFER_STREAM]:
+            self.dialog.findChild(QtCore.QObject, RECORD_SETTINGS).setChecked(True)
+        if cfg[CONFIG_MUTE]:
+            self.dialog.findChild(QtCore.QObject, MUTE_SETTINGS).setChecked(True)
+        index = self.dialog.findChild(QtCore.QObject, QUALITY_SETTINGS).findText(cfg[CONFIG_QUALITY])
+        self.dialog.findChild(QtCore.QObject, QUALITY_SETTINGS).setCurrentIndex(index)
+        self.dialog.findChild(QtCore.QObject, BUFFER_SIZE).setValue(cfg[CONFIG_BUFFER_SIZE])
+        self.dialog.show()
+
+    def generate_conf(self):
+        """Reads values from settings and generates new config"""
+        is_buffer = False
+        is_mute = False
+        quality = str(self.dialog.findChild(QtCore.QObject, QUALITY_SETTINGS).currentText())
+        buffer_size = self.dialog.findChild(QtCore.QObject, BUFFER_SIZE) \
+            .value()
+        if self.dialog.findChild(QtCore.QObject, RECORD_SETTINGS).isChecked():
+            is_buffer = True
+        if self.dialog.findChild(QtCore.QObject, MUTE_SETTINGS).isChecked():
+            is_mute = True
+
+        # Set new cfg values
+        cfg[CONFIG_BUFFER_STREAM] = is_buffer
+        cfg[CONFIG_MUTE] = is_mute
+        cfg[CONFIG_QUALITY] = quality
+        cfg[CONFIG_BUFFER_SIZE] = buffer_size
+
+        try:
+            cfg.dump()
+        except IOError:
+            print("Could not dump config file.")
 
     def update_recent(self):
         """Updates the recent menu option."""

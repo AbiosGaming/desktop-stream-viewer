@@ -1,5 +1,5 @@
-from constants import CONFIG_FILE, CONFIG_DEFAULT_VALUES
 import json
+from constants import CONFIG_FILE, CONFIG_DEFAULT_VALUES
 
 
 class _Config:
@@ -7,13 +7,11 @@ class _Config:
         self._values = None
 
         try:
-            with open(CONFIG_FILE, mode='r') as cfg:
-                self._values = json.load(cfg)
+            self.load()
         except FileNotFoundError:
             print("No config file found, creating one...")
             self._values = CONFIG_DEFAULT_VALUES
-            with open(CONFIG_FILE, mode='w+') as cfg:
-                json.dump(self._values, cfg)
+            self.dump()
         except json.decoder.JSONDecodeError:
             print("There was an error while loading config, using default config instead.")
             self._values = CONFIG_DEFAULT_VALUES
@@ -26,6 +24,16 @@ class _Config:
 
     def __setitem__(self, key, value):
         self._values[key] = value
+
+    def load(self):
+        """Loads the config file. Exceptions are not handled"""
+        with open(CONFIG_FILE, mode='r') as f:
+            self._values = json.load(f)
+
+    def dump(self):
+        """Dumps the config to the config file. Exceptions are not handled"""
+        with open(CONFIG_FILE, mode='w+') as f:
+            json.dump(self._values, f)
 
 
 cfg = _Config()
