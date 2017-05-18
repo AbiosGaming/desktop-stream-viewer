@@ -10,5 +10,6 @@ install:
     - pip3 install pip-accel --cache-dir $HOME/.pip-cache
     - pip-accel install -r test-requirements.txt
 script:
-    - bash flake.sh
+    - bash scripts/flake.sh
+    - bash scripts/nose.sh
 sudo: false
