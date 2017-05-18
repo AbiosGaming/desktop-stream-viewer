@@ -1,0 +1,223 @@
+QToolTip
+{
+    border: 1px solid #76797C;
+    background-color: rgb(90, 102, 117);
+    color: white;
+    padding: 5px;
+    opacity: 200;
+}
+
+ /* QInputDialog styling */
+QWidget
+{
+    color: #eff0f1;
+    background-color: #262730;
+    selection-background-color: rgba(100, 100, 100, 150);
+    selection-color: #eff0f1;
+    background-clip: border;
+    border-image: none;
+    outline: 0;
+}
+
+QWidget:item:hover
+{
+    background-color: #3daee9;
+    color: #eff0f1;
+}
+
+QWidget:item:selected
+{
+    background-color: #3daee9;
+}
+
+QWidget:disabled
+{
+    color: #454545;
+    background-color: #31363b;
+}
+
+QWidget:focus, QMenuBar:focus
+{
+    border: 1px solid #31363b;
+}
+
+QLineEdit
+{
+    background-color: #232629;
+    padding: 5px;
+    border-style: solid;
+    border: 1px solid #76797C;
+    border-radius: 2px;
+    color: #eff0f1;
+}
+
+QTextEdit
+{
+    background-color: #232629;
+    color: #eff0f1;
+    border: 1px solid #76797C;
+}
+
+QPlainTextEdit
+{
+    background-color: #232629;
+    color: #eff0f1;
+    border-radius: 2px;
+    border: 1px solid #76797C;
+}
+
+QMenu::separator
+{
+    height: 1px;
+    background-color: #76797C;
+    color: white;
+    padding-left: 4px;
+    margin-left: 10px;
+    margin-right: 5px;
+}
+
+QPushButton
+{
+    color: #eff0f1;
+    background-color: #31363b;
+    border-width: 1px;
+    border-color: #76797C;
+    border-style: solid;
+    padding: 5px;
+    border-radius: 2px;
+    outline: none;
+}
+
+QPushButton:disabled
+{
+    background-color: #31363b;
+    border-width: 1px;
+    border-color: #454545;
+    border-style: solid;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 2px;
+    color: #454545;
+}
+
+QPushButton#delete_button
+{
+    background-color: transparent;
+    border-image: url(ui/res/close.png);
+    background: none;
+    border: none;
+    background-repeat: none;
+}
+
+QPushButton#forward_button
+{
+    background-color: transparent;
+    border-image: url(ui/res/fow.png);
+    background: none;
+    border: none;
+    background-repeat: none;
+}
+
+QPushButton#backward_button
+{
+    background-color: transparent;
+    border-image: url(ui/res/bck.png);
+    background: none;
+    border: none;
+    background-repeat: none;
+}
+
+QPushButton#delete_button:focus
+{
+    background-color: #FFFFFF;
+    color: white;
+}
+
+QPushButton#pause_button:focus
+{
+    background-color: #FFFFFF;
+    color: white;
+}
+
+QPushButton:checked
+{
+    background-color: #76797C;
+    border-color: transparent;
+}
+
+QComboBox:hover,QPushButton:hover,QLineEdit:hover,QTextEdit:hover,QPlainTextEdit:hover
+{
+    border: 1px solid rgba(100, 100, 100, 150);
+    color: #eff0f1;
+}
+
+QLabel
+{
+    border: 0px solid black;
+}
+
+QMenuBar
+{
+    background-color: #31363b;
+    color: #eff0f1;
+}
+
+QMenuBar::item
+{
+    background: transparent;
+}
+
+QMenuBar::item:selected
+{
+    background: transparent;
+    border: 1px solid #76797C;
+}
+
+QMenuBar::item:pressed
+{
+    border: 1px solid #76797C;
+    background-color: rgba(100, 100, 100, 150);
+    color: #eff0f1;
+    margin-bottom:-1px;
+    padding-bottom:1px;
+}
+
+QMenu
+{
+    background-color: #262730;
+    border: 1px solid black;
+}
+
+QMenu::item
+{
+    padding: 2px 25px 2px 20px;
+    color: #eff0f1;
+    background-color: #262730;
+}
+
+QMenu::item:selected
+{
+    border-color: darkblue;
+    background: rgba(100, 100, 100, 150);
+}
+
+QPushButton::menu-indicator
+{
+    subcontrol-origin: padding;
+    subcontrol-position: bottom right;
+    left: 8px;
+}
+
+QDialog
+{
+    background-color: #262730;
+    border: 1px solid black;
+}
+
+QInputDialog {
+    background-color: #262730;
+    border: 1px solid black;
+    border-radius: 2px;
+}

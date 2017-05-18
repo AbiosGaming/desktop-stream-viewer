@@ -41,15 +41,15 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>100</width>
-     <height>23</height>
+     <width>50</width>
+     <height>50</height>
     </rect>
-   </property>
-   <property name="text">
-    <string>Pause</string>
    </property>
    <property name="visible">
     <bool>false</bool>
+   </property>
+   <property name="accessibleName">
+    <string/>
    </property>
   </widget>
   <widget class="QPushButton" name="delete_button">
@@ -57,15 +57,15 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>100</width>
-     <height>23</height>
+     <width>50</width>
+     <height>50</height>
     </rect>
-   </property>
-   <property name="text">
-    <string>Delete</string>
    </property>
    <property name="visible">
     <bool>false</bool>
+   </property>
+   <property name="accessibleName">
+    <string/>
    </property>
   </widget>
   <widget class="QSlider" name="volume_slider">
@@ -77,6 +77,9 @@
      <height>100</height>
     </rect>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
    <property name="maximum">
     <number>100</number>
    </property>
@@ -85,9 +88,6 @@
    </property>
    <property name="orientation">
     <enum>Qt::Vertical</enum>
-   </property>
-   <property name="visible">
-    <bool>false</bool>
    </property>
   </widget>
   <widget class="QLabel" name="end_label">
@@ -99,14 +99,14 @@
      <height>23</height>
     </rect>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Stream has ended.</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>
-   </property>
-   <property name="visible">
-    <bool>false</bool>
    </property>
   </widget>
  </widget>

@@ -10,7 +10,8 @@ from urllib.parse import urlparse, urlunparse
 
 import vlc
 from constants import (
-    FRAME_SELECT_STYLE, CONFIG_MUTE, CONFIG_BUFFER_STREAM
+    FRAME_SELECT_STYLE, CONFIG_MUTE, CONFIG_BUFFER_STREAM,
+    BUTTON_PAUSE, BUTTON_PLAY
 )
 from containers import LiveStreamContainer, RewindedStreamContainer
 from utils import OS
@@ -95,6 +96,7 @@ class _VideoFrame(QtWidgets.QFrame):
             if event.modifiers() == QtCore.Qt.ControlModifier:
                 self.toggle_select()
             else:
+                self.toggle_button()
                 self.toggle_playback()
 
     def mouseDoubleClickEvent(self, event):
@@ -112,6 +114,7 @@ class _VideoFrame(QtWidgets.QFrame):
             self.player.pause()
         else:
             self.player.play()
+        self.toggle_button()
 
     def set_volume(self):
         """Sets the volume according to the range of the UI volume slider."""
@@ -127,17 +130,34 @@ class _VideoFrame(QtWidgets.QFrame):
     def select(self):
         self.selected = True
         self.setStyleSheet(FRAME_SELECT_STYLE)
+        self.pause_button.hide()
+        self.delete_button.hide()
+        self.volume_slider.hide()
+
         self._swap(self)
 
     def deselect(self):
         self.selected = False
-        self.setStyleSheet("")
+        self.pause_button.show()
+        self.delete_button.show()
+        self.volume_slider.show()
+        if self.player.is_playing():
+            self.setStyleSheet(BUTTON_PLAY)
+        else:
+            self.setStyleSheet(BUTTON_PAUSE)
 
     def toggle_select(self):
         if self.selected:
             self.deselect()
         else:
             self.select()
+
+    def toggle_button(self):
+        """Toggles the icon of a play/pause button"""
+        if self.player.is_playing():
+            self.setStyleSheet(BUTTON_PAUSE)
+        else:
+            self.setStyleSheet(BUTTON_PLAY)
 
     def resizeEvent(self, event):
         rect = self.geometry()
@@ -177,6 +197,7 @@ class LiveVideoFrame(_VideoFrame):
         self.stream_end.connect(self.on_stream_end)
         self.player.set_media(self.stream.media)
         self.player.play()
+        self.toggle_button()
 
         # Setup attribute used for the rewinded stream
         self.rewinded = None

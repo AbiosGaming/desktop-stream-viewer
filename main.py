@@ -48,7 +48,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
     def setup_ui(self):
         """Loads the main.ui file and sets up the window and grid."""
+
         self.ui = uic.loadUi("ui/main.ui", self)
+        with open("ui/styles.qss", "r") as f:
+            self.setStyleSheet(f.read())
         self.grid = VideoFrameGrid(self)
 
         self.container = self.ui.findChild(QtCore.QObject, "container")
