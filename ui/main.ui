@@ -928,7 +928,6 @@
      <string>Menu</string>
     </property>
     <addaction name="MuteAllStreams"/>
-    <addaction name="ReopenStream"/>
     <addaction name="ExportStreamsToClipboard"/>
     <addaction name="ImportStreamsFromClipboard"/>
     <addaction name="Settings"/>
@@ -1026,14 +1025,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+I</string>
-   </property>
-  </action>
-  <action name="ReopenStream">
-   <property name="text">
-    <string>Reopen Stream</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Z</string>
    </property>
   </action>
   <action name="Settings">
