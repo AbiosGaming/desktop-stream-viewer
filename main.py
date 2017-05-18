@@ -19,7 +19,7 @@ from constants import (
     CONFIG_QUALITY, CONFIG_BUFFER_STREAM, CONFIG_BUFFER_SIZE,
     SETTINGS_MENU, BUTTONBOX, QUALITY_SETTINGS, MUTE_SETTINGS,
     RECORD_SETTINGS, BUFFER_SIZE, ADD_NEW_SCHEDULED_STREAM,
-    HISTORY_FILE, LOAD_STREAM_HISTORY
+    LOAD_STREAM_HISTORY
 )
 
 from containers import LiveStreamContainer
@@ -223,7 +223,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         # Add stream after certain delay (factory function)
         def schedule_stream():
-            self.save_stream_to_history(stream_url)
+            self.model.save_stream_to_history(stream_url)
             self._add_new_stream(stream_url, stream_quality)
 
         try:
@@ -271,7 +271,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             self.add_frame.emit(stream_url, stream_options, stream_quality, self.model.grid.coordinates)
 
             # Save url to stream history
-            self.save_stream_to_history(stream_url)
+            self.model.save_stream_to_history(stream_url)
 
         except streamlink.exceptions.NoPluginError:
             self.fail_add_stream.emit(
@@ -372,27 +372,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
     def stream_history(self):
         """Starts streaming all streams that were playing when last session was closed."""
-        stream_history = self.load_stream_history()
-        if stream_history:
-            for stream in stream_history:
+        if self.model.stream_history:
+            for stream in self.model.stream_history:
                 self.add_new_stream(stream)
-
-    def save_stream_to_history(self, url):
-        """Saves a stream to history file."""
-        with open(HISTORY_FILE, 'a') as f:
-            f.write(url + '\n')
-
-    def load_stream_history(self):
-        """Loads up all streams from last session."""
-        stream_history = set()
-        with open(HISTORY_FILE, 'r') as f:
-            lines = f.readlines()
-            for line in lines:
-                stream_history.add(line.strip("\n"))
-        # Clear history file
-        open(HISTORY_FILE, 'w').close()
-        if len(stream_history) > 0:
-            return stream_history
 
 
 def main():
