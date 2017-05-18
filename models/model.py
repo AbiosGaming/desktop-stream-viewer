@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import streamlink
+import os
 
 from constants import HISTORY_FILE
 
@@ -43,10 +44,11 @@ class StreamModel:
 
     def load_stream_history(self):
         """Loads up all streams from last session."""
-        with open(HISTORY_FILE, 'r') as f:
-            lines = f.readlines()
-            for line in lines:
-                self.stream_history.add(line.strip("\n"))
+        if os.path.exists(HISTORY_FILE):
+            with open(HISTORY_FILE, 'r') as f:
+                lines = f.readlines()
+                for line in lines:
+                    self.stream_history.add(line.strip("\n"))
         # Clear history file
         open(HISTORY_FILE, 'w').close()
 
