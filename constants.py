@@ -27,7 +27,6 @@ CONFIG_DEFAULT_VALUES = {
     CONFIG_BUFFER_STREAM: True,
     CONFIG_BUFFER_SIZE: 100
 }
-SLIDER_MAX_VALUE = 10000  # The maxvalue in the ui for the rewind slider
 FRAME_SELECT_STYLE = """QFrame
                         {
                             border-style: outset;

@@ -10,7 +10,7 @@ from urllib.parse import urlparse, urlunparse
 
 import vlc
 from constants import (
-    FRAME_SELECT_STYLE, SLIDER_MAX_VALUE, CONFIG_MUTE, CONFIG_BUFFER_STREAM
+    FRAME_SELECT_STYLE, CONFIG_MUTE, CONFIG_BUFFER_STREAM
 )
 from containers import LiveStreamContainer, RewindedStreamContainer
 from utils import OS
@@ -278,28 +278,6 @@ class LiveVideoFrame(_VideoFrame):
         self.stream.refresh()
         self.player.play()
 
-    def rewind(self):
-        if not cfg[CONFIG_BUFFER_STREAM]:
-            QtWidgets.QMessageBox().warning(
-                self,
-                "Warning",
-                "Cannot Rewind. You currently have buffering turned off."
-            )
-            return
-        if self.rewinded is None:
-            self.rewinded = QtWidgets.QMainWindow(parent=self)
-            self.rewinded.setWindowTitle("Rewinded Stream")
-            self.rewinded.resize(QtWidgets.QDesktopWidget().availableGeometry(-1).size() * 0.5)
-            self.rewinded.frame = RewindedVideoFrame(self.rewinded, self.stream.buffer)
-            # Set events:
-            self.rewinded.closeEvent = self.close_rewinded
-            self.rewinded.frame._fullscreen = self.fullscreen_rewinded
-
-            self.rewinded.setCentralWidget(self.rewinded.frame)
-            self.rewinded.show()
-            # Init values
-            self.rewinded.is_fullscreen = False
-
     def resizeEvent(self, event):
         super(LiveVideoFrame, self).resizeEvent(event)
         rect = self.geometry()
@@ -322,14 +300,34 @@ class LiveVideoFrame(_VideoFrame):
         super(LiveVideoFrame, self).leaveEvent(event)
         self.delete_button.hide()
 
+    def rewind(self):
+        if not cfg[CONFIG_BUFFER_STREAM]:
+            QtWidgets.QMessageBox().warning(
+                self,
+                "Warning",
+                "Cannot Rewind. You currently have buffering turned off."
+            )
+            return
+        if self.rewinded is None:
+            self.rewinded = QtWidgets.QMainWindow(parent=self)
+            self.rewinded.setWindowTitle("Rewinded Stream")
+            self.rewinded.resize(QtWidgets.QDesktopWidget().availableGeometry(-1).size() * 0.5)
+            self.rewinded.frame = RewindedVideoFrame(self.rewinded, self.stream.buffer)
+            # Set events:
+            self.rewinded.closeEvent = self.close_rewinded
+            self.rewinded.frame._fullscreen = self.fullscreen_rewinded
+
+            self.rewinded.setCentralWidget(self.rewinded.frame)
+            self.rewinded.show()
+            # Init values
+            self.rewinded.is_fullscreen = False
+
     # Following functions belong to the rewinded window
     def close_rewinded(self, _):
         """Called whenever the rewinded window is closed"""
         # First stop and release the media player
         self.rewinded.frame.player.stop()
         self.rewinded.frame.player.release()
-        # Stop the timer
-        self.rewinded.frame.timer.stop()
         # To remove the rewinded video window;
         # Let the garbage collector do its magic
         self.rewinded = None
@@ -357,7 +355,6 @@ class RewindedVideoFrame(_VideoFrame):
     def __init__(self, parent, stream_buffer):
         super(RewindedVideoFrame, self).__init__(parent)
         self.stream = RewindedStreamContainer(self.vlc_instance, stream_buffer)
-        self.stream.on_seek = self.on_seek
         self.player.set_media(self.stream.media)
         self.player.play()
 
@@ -365,39 +362,20 @@ class RewindedVideoFrame(_VideoFrame):
         super(RewindedVideoFrame, self).setup_ui("ui/rewoundframe.ui")
 
         self.findChild(QtCore.QObject, "pause_button").clicked.connect(self.toggle_playback)
+        self.findChild(QtCore.QObject, "forward_button").clicked.connect(self.scrub_forward)
+        self.findChild(QtCore.QObject, "backward_button").clicked.connect(self.scrub_backward)
         self.findChild(QtCore.QObject, "volume_slider").valueChanged.connect(self.set_volume)
-
-        self.timer = QtCore.QTimer()
-        self.timer.start(1)
-
-    def on_seek(self, offset):
-        """Called when the underlying media_player is trying to seek
-        """
-        self.slider.pressed = False
 
     def contextMenuEvent(self, event):
         super(RewindedVideoFrame, self).context_menu(event)
         self.setup_actions()
         user_action = self.check_actions(event)
 
-    def slider_pressed(self):
-        """Called whenever the slider is pressed
-        Consequently stops the slider value from getting updated
-        """
-        self.slider.pressed = True
+    def scrub_forward(self):
+        self.player.set_position(self.player.get_position() * 1.1)
 
-    def scrub(self):
-        """Called whenever the slider is released, which is followed by a scrub
-        """
-        self.player.set_position(self.slider.value() / SLIDER_MAX_VALUE)
-
-    def update_slider_value(self):
-        """Updates the slider with a guesstimate of video position
-        """
-        # Some guessing magic to get the timing right, kind of works for 480p30
-        percentage_played = self.player.get_time() / (145 * len(self.stream.buffer))
-        if not self.slider.pressed:
-            self.slider.setValue(percentage_played * SLIDER_MAX_VALUE)
+    def scrub_backward(self):
+        self.player.set_position(self.player.get_position() * 0.9)
 
     def resizeEvent(self, event):
         super(RewindedVideoFrame, self).resizeEvent(event)

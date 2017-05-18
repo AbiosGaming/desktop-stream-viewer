@@ -163,7 +163,6 @@ class RewindedStreamContainer(StreamContainer):
 
         self.buffer = list(stream_buffer)
         self.curr = 0
-        self.on_seek = None
 
     def open(self):
         """Called by libVLC upon opening the media. Not currently used."""
@@ -176,25 +175,22 @@ class RewindedStreamContainer(StreamContainer):
         """
         # If we have no data to read HACK:
         if self.curr >= len(self.buffer):
-            # Force vlc to continue reading some arbitrary data
-            # as we may want to seek
-            buf[0] = 1
-            return 2
+            # Returning an empty buffer somehow forces vlc to loop
+            return length
 
         data = self.buffer[self.curr]
         for i, val in enumerate(data):
-            buf[i] = val
+            if i < length:
+                buf[i] = val
 
         self.curr = (self.curr + 1)
 
-        return len(data)
+        return min(len(data), length)
 
     def seek(self, offset):
         """Called by libVLC upon seeking in the media."""
         # Set the current pointer to the correct location
         self.curr = int((offset / 2 ** 62) * self.curr)
-        if self.on_seek is not None:
-            self.on_seek(offset)
         return 0
 
     def close(self):
