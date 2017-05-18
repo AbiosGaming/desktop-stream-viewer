@@ -52,7 +52,7 @@ pip install -r requirements.txt
 Go ahead and test the application by running the following command (inside the
 repository folder):
 ```
-./main.py https://www.twitch.tv/esl_csgo low
+./main.py
 ```
 
 Which if everything is working correctly should bring up a application window
