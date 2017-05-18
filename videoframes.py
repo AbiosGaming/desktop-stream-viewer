@@ -2,8 +2,11 @@
 
 import platform
 import sys
+import webbrowser
+import os as os2
 
 from PyQt5 import QtWidgets, QtCore, uic
+from urllib.parse import urlparse, urlunparse
 
 import vlc
 from constants import (
@@ -62,7 +65,7 @@ class _VideoFrame(QtWidgets.QFrame):
 
     def setup_actions(self):
         """Sets up the actions in the context menu provided."""
-        self.mute_action = self.context_menu.addAction("Mute stream")
+        self.mute_action = self.context_menu.addAction("Mute")
         self.mute_action.setCheckable(True)
 
         if self.player.audio_get_mute():
@@ -109,6 +112,10 @@ class _VideoFrame(QtWidgets.QFrame):
             self.player.pause()
         else:
             self.player.play()
+
+    def set_volume(self):
+        """Sets the volume according to the range of the UI volume slider."""
+        self.player.audio_set_volume(self.volume_slider.value())
 
     def delete_stream(self):
         """Deletes videoframe/stream"""
@@ -179,6 +186,7 @@ class LiveVideoFrame(_VideoFrame):
 
         self.findChild(QtCore.QObject, "delete_button").clicked.connect(self.delete_stream)
         self.findChild(QtCore.QObject, "pause_button").clicked.connect(self.toggle_playback)
+        self.findChild(QtCore.QObject, "volume_slider").valueChanged.connect(self.set_volume)
 
         # Store stream_end_label
         self.stream_end_label = self.findChild(QtWidgets.QLabel, "end_label")
@@ -189,7 +197,15 @@ class LiveVideoFrame(_VideoFrame):
         self.rewind_action.triggered.connect(self.rewind)
         self.context_menu.addSeparator()
 
-        quality_submenu = QtWidgets.QMenu("Change quality", parent=self)
+        self.reload_action = self.context_menu.addAction("Reload")
+        self.reload_action.triggered.connect(self.reload_stream)
+        self.context_menu.addSeparator()
+
+        self.chat_action = self.context_menu.addAction("Open Chat")
+        self.chat_action.triggered.connect(self.open_stream_in_browser)
+        self.context_menu.addSeparator()
+
+        quality_submenu = QtWidgets.QMenu("Change Quality", parent=self)
 
         # Add the quality options to the submenu.
         self.quality_actions = []
@@ -226,6 +242,40 @@ class LiveVideoFrame(_VideoFrame):
     def change_stream_quality(self, quality):
         self.player.stop()
         self.stream.change_stream_quality(quality)
+        self.player.play()
+
+    def open_stream_in_browser(self, event):
+        # The URL is split to its different elements.
+        # E.g. https://www.twitch.tv/example
+        url_comp = urlparse(self.stream.url)
+        url_sch = url_comp.scheme  # https
+        url_net = url_comp.netloc  # www.twitch.tv
+        url_path = url_comp.path  # /example
+
+        # If the url does not contain www. URL netloc is "" and path is the whole URL.
+        # Solved by adding "http://www." to path and then reparsing.
+        if url_net is "":
+            url_comp2 = urlparse("http://www." + url_path)
+            url_net = url_comp2.netloc
+            url_path = url_comp2.path
+
+        if "http" != url_sch:
+            url_sch = "http"
+        # If the URL is from twitch, then go to its chat
+        if "twitch" in url_net:
+            url_path = url_path + "/chat"
+
+        # Creates a URL with given elements
+        url = urlunparse((url_sch, url_net, url_path, "", "", ""))
+        os = platform.system()
+        if os == OS.WINDOWS:
+            os2.startfile(url)
+        else:
+            webbrowser.open(url)
+
+    def reload_stream(self, event):
+        self.player.stop()
+        self.stream.refresh()
         self.player.play()
 
     def rewind(self):
@@ -315,6 +365,7 @@ class RewindedVideoFrame(_VideoFrame):
         super(RewindedVideoFrame, self).setup_ui("ui/rewoundframe.ui")
 
         self.findChild(QtCore.QObject, "pause_button").clicked.connect(self.toggle_playback)
+        self.findChild(QtCore.QObject, "volume_slider").valueChanged.connect(self.set_volume)
 
         self.timer = QtCore.QTimer()
         self.timer.start(1)

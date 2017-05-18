@@ -146,6 +146,9 @@ class LiveStreamContainer(StreamContainer):
 
         self.quality = quality
 
+    def refresh(self):
+        self.change_stream_quality(self.quality)
+
 
 class RewindedStreamContainer(StreamContainer):
     """This class represents a **rewinded** stream and contains all information
