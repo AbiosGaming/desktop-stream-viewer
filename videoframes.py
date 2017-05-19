@@ -13,7 +13,7 @@ from constants import (
     FRAME_SELECT_STYLE, CONFIG_MUTE, CONFIG_BUFFER_STREAM,
     BUTTON_PAUSE, BUTTON_PLAY
 )
-from containers import LiveStreamContainer, RewindedStreamContainer
+from containers import LiveStreamContainer, RewoundStreamContainer
 from utils import OS
 from config import cfg
 
@@ -199,8 +199,8 @@ class LiveVideoFrame(_VideoFrame):
         self.player.play()
         self.toggle_button()
 
-        # Setup attribute used for the rewinded stream
-        self.rewinded = None
+        # Setup attribute used for the rewound stream
+        self.rewound = None
 
     def setup_ui(self):
         super(LiveVideoFrame, self).setup_ui("ui/frame.ui")
@@ -329,43 +329,43 @@ class LiveVideoFrame(_VideoFrame):
                 "Cannot Rewind. You currently have buffering turned off."
             )
             return
-        if self.rewinded is None:
-            self.rewinded = QtWidgets.QMainWindow(parent=self)
-            self.rewinded.setWindowTitle("Rewinded Stream")
-            self.rewinded.resize(QtWidgets.QDesktopWidget().availableGeometry(-1).size() * 0.5)
-            self.rewinded.frame = RewindedVideoFrame(self.rewinded, self.stream.buffer)
+        if self.rewound is None:
+            self.rewound = QtWidgets.QMainWindow(parent=self)
+            self.rewound.setWindowTitle("Rewound Stream")
+            self.rewound.resize(QtWidgets.QDesktopWidget().availableGeometry(-1).size() * 0.5)
+            self.rewound.frame = RewoundVideoFrame(self.rewound, self.stream.buffer)
             # Set events:
-            self.rewinded.closeEvent = self.close_rewinded
-            self.rewinded.frame._fullscreen = self.fullscreen_rewinded
+            self.rewound.closeEvent = self.close_rewound
+            self.rewound.frame._fullscreen = self.fullscreen_rewound
 
-            self.rewinded.setCentralWidget(self.rewinded.frame)
-            self.rewinded.show()
+            self.rewound.setCentralWidget(self.rewound.frame)
+            self.rewound.show()
             # Init values
-            self.rewinded.is_fullscreen = False
+            self.rewound.is_fullscreen = False
 
-    # Following functions belong to the rewinded window
-    def close_rewinded(self, _):
-        """Called whenever the rewinded window is closed"""
+    # Following functions belong to the rewound window
+    def close_rewound(self, _):
+        """Called whenever the rewound window is closed"""
         # First stop and release the media player
-        self.rewinded.frame.player.stop()
-        self.rewinded.frame.player.release()
-        # To remove the rewinded video window;
+        self.rewound.frame.player.stop()
+        self.rewound.frame.player.release()
+        # To remove the rewound video window;
         # Let the garbage collector do its magic
-        self.rewinded = None
+        self.rewound = None
 
-    def fullscreen_rewinded(self, _):
-        """Called whenever the rewinded window is to be fullscreened"""
-        if self.rewinded.is_fullscreen:
-            self.rewinded.setWindowState(self.rewinded.window_state)
-            self.rewinded.is_fullscreen = False
+    def fullscreen_rewound(self, _):
+        """Called whenever the rewound window is to be fullscreened"""
+        if self.rewound.is_fullscreen:
+            self.rewound.setWindowState(self.rewound.window_state)
+            self.rewound.is_fullscreen = False
         else:
-            self.rewinded.window_state = self.windowState()
-            self.rewinded.showFullScreen()
-            self.rewinded.is_fullscreen = True
+            self.rewound.window_state = self.windowState()
+            self.rewound.showFullScreen()
+            self.rewound.is_fullscreen = True
 
 
-class RewindedVideoFrame(_VideoFrame):
-    """A class representing a VideoFrame containing a **rewinded** stream.
+class RewoundVideoFrame(_VideoFrame):
+    """A class representing a VideoFrame containing a **rewound** stream.
 
     Args:
         vlc_instance: VLC instance object.
@@ -374,13 +374,13 @@ class RewindedVideoFrame(_VideoFrame):
     """
 
     def __init__(self, parent, stream_buffer):
-        super(RewindedVideoFrame, self).__init__(parent)
-        self.stream = RewindedStreamContainer(self.vlc_instance, stream_buffer)
+        super(RewoundVideoFrame, self).__init__(parent)
+        self.stream = RewoundStreamContainer(self.vlc_instance, stream_buffer)
         self.player.set_media(self.stream.media)
         self.player.play()
 
     def setup_ui(self):
-        super(RewindedVideoFrame, self).setup_ui("ui/rewoundframe.ui")
+        super(RewoundVideoFrame, self).setup_ui("ui/rewoundframe.ui")
 
         self.findChild(QtCore.QObject, "pause_button").clicked.connect(self.toggle_playback)
         self.findChild(QtCore.QObject, "forward_button").clicked.connect(self.scrub_forward)
@@ -388,7 +388,7 @@ class RewindedVideoFrame(_VideoFrame):
         self.findChild(QtCore.QObject, "volume_slider").valueChanged.connect(self.set_volume)
 
     def contextMenuEvent(self, event):
-        super(RewindedVideoFrame, self).context_menu(event)
+        super(RewoundVideoFrame, self).context_menu(event)
         self.setup_actions()
         user_action = self.check_actions(event)
 
@@ -399,7 +399,7 @@ class RewindedVideoFrame(_VideoFrame):
         self.player.set_position(self.player.get_position() * 0.9)
 
     def resizeEvent(self, event):
-        super(RewindedVideoFrame, self).resizeEvent(event)
+        super(RewoundVideoFrame, self).resizeEvent(event)
         rect = self.geometry()
         forwardButton_rect = self.forward_button.geometry()
         backwardButton_rect = self.backward_button.geometry()
@@ -413,11 +413,11 @@ class RewindedVideoFrame(_VideoFrame):
         )
 
     def enterEvent(self, event):
-        super(RewindedVideoFrame, self).enterEvent(event)
+        super(RewoundVideoFrame, self).enterEvent(event)
         self.forward_button.show()
         self.backward_button.show()
 
     def leaveEvent(self, event):
-        super(RewindedVideoFrame, self).leaveEvent(event)
+        super(RewoundVideoFrame, self).leaveEvent(event)
         self.forward_button.hide()
         self.backward_button.hide()

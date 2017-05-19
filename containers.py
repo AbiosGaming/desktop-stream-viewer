@@ -150,11 +150,11 @@ class LiveStreamContainer(StreamContainer):
         self.change_stream_quality(self.quality)
 
 
-class RewindedStreamContainer(StreamContainer):
-    """This class represents a **rewinded** stream and contains all information
+class RewoundStreamContainer(StreamContainer):
+    """This class represents a **rewound** stream and contains all information
     regarding it's media.
 
-    The RewindedStreamContainer takes another streams buffer, copies that and
+    The RewoundStreamContainer takes another streams buffer, copies that and
     pulls all of it's video data directly from the copied buffer.
     """
 
