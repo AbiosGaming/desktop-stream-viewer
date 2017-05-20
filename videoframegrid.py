@@ -92,7 +92,7 @@ class VideoFrameGrid(QtWidgets.QGridLayout):
             for videoframe in self.videoframes:
                 if videoframe != selected_frame:
                     videoframe.show()
-                    videoframe.player.audio_set_mute(False)
+                    videoframe.player.audio_set_mute(videoframe.is_muted)
 
             self.parent.menubar.show()
             self.parent.setWindowState(self.window_state)
