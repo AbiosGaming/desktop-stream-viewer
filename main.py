@@ -193,10 +193,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         # Use default quality if not specified
         if not stream_quality:
             stream_quality = cfg[CONFIG_QUALITY]
-        # Lower case the stream url for easier handling in future cases, unless
-        # it's Youtube
-        if 'youtube' not in stream_url:
-            stream_url = stream_url.lower()
 
         # Give some feedback to the user
         self.show_loading_gif()
