@@ -3,6 +3,7 @@
 
 import streamlink
 import os
+from urllib.parse import urlparse, urlunparse
 
 from constants import HISTORY_FILE
 
@@ -27,6 +28,17 @@ class StreamModel:
 
     def get_stream_options(self, *args):
         return self.streamlink_session.streams(*args)
+
+    def parse_url(self, stream_url):
+        if "http" not in stream_url.lower():
+            stream_url = "http://" + stream_url
+
+        parsed_url = urlparse(stream_url)
+        netloc = parsed_url.netloc.lower()
+        if "www" not in parsed_url.netloc:
+            netloc = "www." + parsed_url.netloc
+        correct_url = (parsed_url.scheme, netloc, parsed_url.path, parsed_url.params, parsed_url.query, parsed_url.fragment)
+        return urlunparse(correct_url)
 
     def add_new_videoframe(self, *args):
         self.grid.add_new_videoframe(*args)

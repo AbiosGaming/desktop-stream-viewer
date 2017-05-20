@@ -194,6 +194,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         if not stream_quality:
             stream_quality = cfg[CONFIG_QUALITY]
 
+        # Lower case the stream url for easier handling in future cases
+        stream_url = self.model.parse_url(stream_url)
+
         # Give some feedback to the user
         self.show_loading_gif()
 

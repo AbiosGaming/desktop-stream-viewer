@@ -266,28 +266,21 @@ class LiveVideoFrame(_VideoFrame):
         self.player.play()
 
     def open_stream_in_browser(self, event):
-        # The URL is split to its different elements.
-        # E.g. https://www.twitch.tv/example
-        url_comp = urlparse(self.stream.url)
-        url_sch = url_comp.scheme  # https
-        url_net = url_comp.netloc  # www.twitch.tv
-        url_path = url_comp.path  # /example
+        stream_url = urlparse(self.stream.url)
 
-        # If the url does not contain www. URL netloc is "" and path is the whole URL.
-        # Solved by adding "http://www." to path and then reparsing.
-        if url_net is "":
-            url_comp2 = urlparse("http://www." + url_path)
-            url_net = url_comp2.netloc
-            url_path = url_comp2.path
+        netloc = stream_url.netloc
+        path = stream_url.path
 
-        if "http" != url_sch:
-            url_sch = "http"
-        # If the URL is from twitch, then go to its chat
-        if "twitch" in url_net:
-            url_path = url_path + "/chat"
+        if "twitch" in netloc:
+            path = stream_url.path + "/chat"
 
-        # Creates a URL with given elements
-        url = urlunparse((url_sch, url_net, url_path, "", "", ""))
+        if "youtube" in netloc:
+            path = path.replace("watch", "live_chat")
+
+        correct_url = (stream_url.scheme, netloc, path, stream_url.params, stream_url.query, stream_url.fragment)
+
+        url = urlunparse(correct_url)
+
         os = platform.system()
         if os == OS.WINDOWS:
             os2.startfile(url)
