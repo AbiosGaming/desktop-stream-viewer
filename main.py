@@ -152,6 +152,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         cfg[CONFIG_QUALITY] = quality
         cfg[CONFIG_BUFFER_SIZE] = buffer_size
 
+        QtWidgets.QMessageBox.critical(self, "Caution", "Some of your changes may require a restart in order to take effect.")
+
         try:
             cfg.dump()
         except IOError:
