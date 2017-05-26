@@ -9,10 +9,10 @@ MUTE_ALL_STREAMS = 'MuteAllStreams'
 ADD_NEW_STREAM = 'AddNewStream'
 SETTINGS_MENU = 'Settings'
 BUTTONBOX = 'buttonBox'
-BUFFER_SIZE = 'bufferSize'
-RECORD_SETTINGS = 'buffer'
-QUALITY_SETTINGS = 'qualityBox'
-MUTE_SETTINGS = 'mute'
+BUFFER_SIZE = 'bufferSizeSpinBox'
+RECORD_SETTINGS = 'bufferStreamCheckBox'
+QUALITY_SETTINGS = 'qualityOptionsLineEdit'
+MUTE_SETTINGS = 'muteStreamsCheckBox'
 ADD_NEW_SCHEDULED_STREAM = "AddNewScheduledStream"
 LOAD_STREAM_HISTORY = 'LoadStreamsFromHistory'
 BUTTON_PLAY = 'QPushButton#pause_button {background-color: transparent; border-image: url(ui/res/pause2.png); background: none; border: none; background-repeat: none;}'
@@ -24,7 +24,7 @@ CONFIG_BUFFER_STREAM = 'buffer_stream'
 CONFIG_BUFFER_SIZE = 'buffer_size'
 CONFIG_DEFAULT_VALUES = {
     CONFIG_MUTE: False,
-    CONFIG_QUALITY: "best",
+    CONFIG_QUALITY: ["720p", "480p", "360p", "160p"],
     CONFIG_BUFFER_STREAM: True,
     CONFIG_BUFFER_SIZE: 100
 }
@@ -36,3 +36,7 @@ FRAME_SELECT_STYLE = """QFrame
                         }
                         """
 HISTORY_FILE = 'history.txt'
+
+SETTINGS_UI_FILE = 'ui/settings_dialog.ui'
+CONFIG_QUALITY_DELIMITER_SPLIT = ","
+CONFIG_QUALITY_DELIMITER_JOIN = ", "

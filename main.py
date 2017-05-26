@@ -19,7 +19,8 @@ from constants import (
     CONFIG_QUALITY, CONFIG_BUFFER_STREAM, CONFIG_BUFFER_SIZE,
     SETTINGS_MENU, BUTTONBOX, QUALITY_SETTINGS, MUTE_SETTINGS,
     RECORD_SETTINGS, BUFFER_SIZE, ADD_NEW_SCHEDULED_STREAM,
-    LOAD_STREAM_HISTORY
+    LOAD_STREAM_HISTORY, SETTINGS_UI_FILE,
+    CONFIG_QUALITY_DELIMITER_SPLIT, CONFIG_QUALITY_DELIMITER_JOIN
 )
 
 from containers import LiveStreamContainer
@@ -77,9 +78,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         self.ui.show()
 
-    def setup_videoframe(self, stream_url, stream_options, quality):
+    def setup_videoframe(self, stream_url, stream_options, stream_quality):
         """Sets up a videoframe and with the provided stream information."""
-        self.model.add_new_videoframe(stream_url, stream_options, quality)
+        self.model.add_new_videoframe(stream_url, stream_options, stream_quality)
         # Remove the loading feedback
         self.hide_loading_gif()
         # Update recent meny option
@@ -121,7 +122,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
     def show_settings(self):
         """Shows a dialog containing settings for DSW"""
         self.dialog = QDialog(self)
-        self.dialog.ui = uic.loadUi("ui/dialog.ui", self.dialog)
+        self.dialog.ui = uic.loadUi(SETTINGS_UI_FILE, self.dialog)
         self.dialog.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.dialog.findChild(QtCore.QObject, BUTTONBOX) \
             .accepted.connect(self.generate_conf)
@@ -129,30 +130,30 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             self.dialog.findChild(QtCore.QObject, RECORD_SETTINGS).setChecked(True)
         if cfg[CONFIG_MUTE]:
             self.dialog.findChild(QtCore.QObject, MUTE_SETTINGS).setChecked(True)
-        index = self.dialog.findChild(QtCore.QObject, QUALITY_SETTINGS).findText(cfg[CONFIG_QUALITY])
-        self.dialog.findChild(QtCore.QObject, QUALITY_SETTINGS).setCurrentIndex(index)
+        self.dialog.findChild(QtCore.QObject, QUALITY_SETTINGS) \
+            .setText(CONFIG_QUALITY_DELIMITER_JOIN.join(cfg[CONFIG_QUALITY]))
         self.dialog.findChild(QtCore.QObject, BUFFER_SIZE).setValue(cfg[CONFIG_BUFFER_SIZE])
         self.dialog.show()
 
     def generate_conf(self):
-        """Reads values from settings and generates new config"""
-        is_buffer = False
-        is_mute = False
-        quality = str(self.dialog.findChild(QtCore.QObject, QUALITY_SETTINGS).currentText())
-        buffer_size = self.dialog.findChild(QtCore.QObject, BUFFER_SIZE) \
-            .value()
-        if self.dialog.findChild(QtCore.QObject, RECORD_SETTINGS).isChecked():
-            is_buffer = True
-        if self.dialog.findChild(QtCore.QObject, MUTE_SETTINGS).isChecked():
-            is_mute = True
+        """Generate a config from the provided settings."""
+        # Quality options should be provided as a comma-separated string.
+        quality_text = self.dialog.findChild(QtCore.QObject, QUALITY_SETTINGS).text()
+        quality_options = [quality.strip()
+                           for quality
+                           in quality_text.split(CONFIG_QUALITY_DELIMITER_SPLIT)]
 
         # Set new cfg values
-        cfg[CONFIG_BUFFER_STREAM] = is_buffer
-        cfg[CONFIG_MUTE] = is_mute
-        cfg[CONFIG_QUALITY] = quality
-        cfg[CONFIG_BUFFER_SIZE] = buffer_size
+        cfg[CONFIG_QUALITY] = quality_options
+        cfg[CONFIG_BUFFER_STREAM] = self.dialog.findChild(QtCore.QObject, RECORD_SETTINGS).isChecked()
+        cfg[CONFIG_MUTE] = self.dialog.findChild(QtCore.QObject, MUTE_SETTINGS).isChecked()
+        cfg[CONFIG_BUFFER_SIZE] = self.dialog.findChild(QtCore.QObject, BUFFER_SIZE).value()
 
-        QtWidgets.QMessageBox.critical(self, "Caution", "Some of your changes may require a restart in order to take effect.")
+        QtWidgets.QMessageBox.critical(
+            self,
+            "Caution",
+            "Some of your changes may require a restart in order to take effect."
+        )
 
         try:
             cfg.dump()
@@ -180,7 +181,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         for stream in streams:
             self.add_new_stream(stream_url=stream)
 
-    def add_new_stream(self, stream_url=None, stream_quality=None):
+    def add_new_stream(self, stream_url=None, stream_qualities=cfg[CONFIG_QUALITY]):
         """Adds a new player for the specified stream in the grid."""
         if not stream_url:
             stream_url, ok = QtWidgets.QInputDialog.getText(
@@ -192,10 +193,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             if not ok:
                 return
 
-        # Use default quality if not specified
-        if not stream_quality:
-            stream_quality = cfg[CONFIG_QUALITY]
-
         # Lower case the stream url for easier handling in future cases
         stream_url = self.model.parse_url(stream_url)
 
@@ -205,9 +202,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         # Run the rest on a separate thread to be able to show the loading feedback
 
         # Also helps a lot with lag
-        threading.Thread(target=self._add_new_stream, args=(stream_url, stream_quality)).start()
+        threading.Thread(target=self._add_new_stream, args=(stream_url, stream_qualities)).start()
 
-    def add_new_scheduled_stream(self, *args, stream_url=None, stream_quality=cfg[CONFIG_QUALITY]):
+    def add_new_scheduled_stream(self, *args, stream_url=None, stream_qualities=cfg[CONFIG_QUALITY]):
         """Schedules a new stream at given time"""
         if not stream_url:
             stream_url, ok1 = QtWidgets.QInputDialog.getText(
@@ -230,7 +227,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         # Add stream after certain delay (factory function)
         def schedule_stream():
             self.model.save_stream_to_history(stream_url)
-            self._add_new_stream(stream_url, stream_quality)
+            self._add_new_stream(stream_url, stream_qualities)
 
         try:
             h, m = inputTime.split(".")
@@ -253,7 +250,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 "Not a valid time"
             )
 
-    def _add_new_stream(self, stream_url=None, stream_quality=cfg[CONFIG_QUALITY]):
+    def _add_new_stream(self, stream_url, stream_qualities):
         """Fetches qualities and if possible adds a frame to the main window."""
         try:
             stream_options = self.model.get_stream_options(stream_url)
@@ -263,18 +260,21 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             if not stream_options:
                 raise streamlink.exceptions.NoStreamsError(stream_url)
 
-            if stream_quality not in stream_options:
+            # Quality options that are both available and set as default values.
+            available_qualities = [q for q in stream_qualities if q in stream_options]
+
+            if not available_qualities:
                 self.fail_add_stream.emit(
                     AddStreamError.DEFAULT_QUALITY_MISSING,
                     (
                         stream_options,
-                        stream_url,
-                        stream_quality
+                        stream_url
                     )
                 )
                 return
 
-            self.add_frame.emit(stream_url, stream_options, stream_quality, self.model.grid.coordinates)
+            # Take the first available quality since that has the highest priority.
+            self.add_frame.emit(stream_url, stream_options, available_qualities[0], self.model.grid.coordinates)
 
             # Save url to stream history
             self.model.save_stream_to_history(stream_url)
@@ -343,7 +343,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             (title, text) = args
             QtWidgets.QMessageBox().warning(self, title, text)
         elif err == AddStreamError.DEFAULT_QUALITY_MISSING:
-            (stream_options, url, quality) = args
+            (stream_options, url) = args
             quality, ok = self._get_user_quality_preference(stream_options)
             if ok:
                 self.add_new_stream(url, quality)
