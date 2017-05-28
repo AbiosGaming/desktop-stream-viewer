@@ -9,6 +9,7 @@ from PyQt5 import QtWidgets
 
 from application import ApplicationWindow
 
+
 def main():
     app = QtWidgets.QApplication([])
     window = ApplicationWindow()
