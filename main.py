@@ -7,7 +7,6 @@ import textwrap
 # Qt imports
 from PyQt5 import QtWidgets
 
-from containers import LiveStreamContainer
 from application import ApplicationWindow
 
 def main():
