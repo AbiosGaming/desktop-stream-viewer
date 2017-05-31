@@ -118,6 +118,12 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         clipboard = QtWidgets.QApplication.clipboard()
         clipboard.clear(mode=clipboard.Clipboard)
         clipboard.setText(text, mode=clipboard.Clipboard)
+        # Give some feedback to the user
+        QtWidgets.QMessageBox.information(
+            self,
+            "Export streams",
+            "Succesfully exported the following streams to your clipboard:\n" + text
+        )
 
     def show_settings(self):
         """Shows a dialog containing settings for DSW"""
