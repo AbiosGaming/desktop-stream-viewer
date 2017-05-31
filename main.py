@@ -181,7 +181,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         for stream in streams:
             self.add_new_stream(stream_url=stream)
 
-    def add_new_stream(self, stream_url=None, stream_qualities=cfg[CONFIG_QUALITY]):
+    def add_new_stream(self, stream_url=None, stream_qualities=None):
         """Adds a new player for the specified stream in the grid."""
         if not stream_url:
             stream_url, ok = QtWidgets.QInputDialog.getText(
@@ -193,6 +193,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             if not ok:
                 return
 
+        # Use default quality if not specified
+        if not stream_qualities:
+            stream_qualities = cfg[CONFIG_QUALITY]
+
         # Lower case the stream url for easier handling in future cases
         stream_url = self.model.parse_url(stream_url)
 
@@ -200,11 +204,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.show_loading_gif()
 
         # Run the rest on a separate thread to be able to show the loading feedback
-
         # Also helps a lot with lag
         threading.Thread(target=self._add_new_stream, args=(stream_url, stream_qualities)).start()
 
-    def add_new_scheduled_stream(self, *args, stream_url=None, stream_qualities=cfg[CONFIG_QUALITY]):
+    def add_new_scheduled_stream(self, stream_url=None, stream_qualities=None):
         """Schedules a new stream at given time"""
         if not stream_url:
             stream_url, ok1 = QtWidgets.QInputDialog.getText(
@@ -214,6 +217,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             )
         if not ok1:
             return
+
+        # Use default quality if not specified
+        if not stream_qualities:
+            stream_qualities = cfg[CONFIG_QUALITY]
 
         inputTime, ok2 = QtWidgets.QInputDialog.getText(
             self,
