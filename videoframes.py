@@ -29,6 +29,7 @@ class _VideoFrame(QtWidgets.QFrame):
         super(_VideoFrame, self).__init__(parent)
         # Opengl performs better on windows, which is odd
         self.vlc_instance = vlc.Instance(
+            "--quiet " +           # Dont print stuff to stdout
             "--no-xlib " +         # Turn off XInitThreads()
             "--vout=opengl " +     # Force OpenGL as vout module for better performance on windows
             "--avcodec-threads=0"  # Number of threads used for decoding, 0 meaning auto
